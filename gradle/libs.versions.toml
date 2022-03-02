@@ -1,0 +1,6 @@
+[versions]
+checkstyle = "9.3"
+
+[libraries]
+assertj = { module = "org.assertj:assertj-core", version = "3.22.0" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version = "5.8.2" }

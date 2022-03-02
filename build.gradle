@@ -1,0 +1,29 @@
+group = 'com.github.testtemplate'
+version = '0.0.0'
+
+subprojects {
+  apply plugin: 'java-library'
+  apply plugin: 'checkstyle'
+
+  group = parent.group
+  version = parent.version
+
+  repositories {
+    mavenCentral()
+  }
+
+  sourceCompatibility = JavaVersion.VERSION_11
+  targetCompatibility = JavaVersion.VERSION_11
+
+  test {
+    useJUnitPlatform()
+
+    testLogging {
+      events = ['FAILED', 'PASSED', 'SKIPPED']
+    }
+  }
+
+  checkstyle {
+    toolVersion = libs.versions.checkstyle.get()
+  }
+}
