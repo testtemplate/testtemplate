@@ -1,0 +1,9 @@
+dependencies {
+  api libs.junit.api
+  implementation project(':testtemplate-api')
+
+  testImplementation project(':testtemplate-core')
+  testImplementation libs.assertj
+  testImplementation libs.junit
+  testImplementation libs.logback
+}

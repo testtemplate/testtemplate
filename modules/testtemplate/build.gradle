@@ -1,4 +1,9 @@
 dependencies {
+  api project(':testtemplate-api')
+
+  implementation project(':testtemplate-core')
+  implementation project(':testtemplate-junit5')
+
   testImplementation libs.assertj
   testImplementation libs.junit
 }

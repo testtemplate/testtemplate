@@ -1,0 +1,166 @@
+package com.github.testtemplate.core.runner;
+
+import com.github.testtemplate.Context;
+import com.github.testtemplate.ContextView;
+import com.github.testtemplate.TestListener.VariableType;
+import com.github.testtemplate.core.TestModifier;
+import com.github.testtemplate.core.TestVariable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+import static com.github.testtemplate.TestListener.VariableType.MODIFIED;
+import static com.github.testtemplate.TestListener.VariableType.ORIGINAL;
+import static java.util.Collections.unmodifiableSet;
+
+final class RunnerVariableResolver {
+
+  private final Map<String, InnerVariable> variables = new HashMap<>();
+
+  private final Map<String, InnerModifier> modifiers = new HashMap<>();
+
+  private Listener listener = (name, type, value) -> {};
+
+  RunnerVariableResolver(Iterable<TestVariable> variables, Iterable<TestModifier> modifiers) {
+    variables.forEach(variable -> this.variables.put(
+        variable.getName(),
+        new InnerVariable(variable.getValueSupplier(), variable.getMetadata())));
+
+    modifiers.forEach(modifier -> this.modifiers.put(
+        modifier.getName(),
+        new InnerModifier(modifier.getValueSupplier(), modifier.getMetadata())));
+  }
+
+  private RunnerVariableResolver(
+      Map<String, InnerVariable> variables,
+      Map<String, InnerModifier> modifiers,
+      Listener listener) {
+    this.variables.putAll(variables);
+    this.modifiers.putAll(modifiers);
+    this.listener = listener;
+  }
+
+  void registerListener(Listener listener) {
+    this.listener = listener != null ? listener : (name, type, value) -> {};
+  }
+
+  public Iterable<String> getVariableNames() {
+    return unmodifiableSet(variables.keySet());
+  }
+
+  public RunnerVariable getVariable(String name) {
+    var modifier = modifiers.get(name);
+    if (modifier != null) {
+      var newResolver = this.copy().withoutModifier(name);
+      var newContext = new RunnerContextView(newResolver);
+      return new RunnerVariable(
+          name,
+          MODIFIED,
+          () -> {
+            var value = modifier.valueSupplier.apply(newContext);
+            listener.accept(name, MODIFIED, value);
+            return value;
+          },
+          modifier.metadata);
+    }
+
+    var variable = variables.get(name);
+    if (variable != null) {
+      var newResolver = this.copy().withoutVariable(name);
+      var newContext = new RunnerContext(newResolver);
+      return new RunnerVariable(
+          name,
+          ORIGINAL,
+          () -> {
+            var value = variable.valueSupplier.apply(newContext);
+            listener.accept(name, ORIGINAL, value);
+            return value;
+          },
+          variable.metadata);
+    }
+
+    throw new TestRunnerException("The variable '" + name + "' is undefined");
+  }
+
+  public RunnerVariable getVariableOrDefault(String name, Object defaultValue) {
+    var modifier = modifiers.get(name);
+    if (modifier != null) {
+      var newResolver = this.copy()
+          .withVariable(name, new InnerVariable(c -> defaultValue))
+          .withoutModifier(name);
+      var newContext = new RunnerContextView(newResolver);
+      return new RunnerVariable(
+          name,
+          MODIFIED,
+          () -> {
+            var value = modifier.valueSupplier.apply(newContext);
+            listener.accept(name, MODIFIED, value);
+            return value;
+          },
+          modifier.metadata);
+    }
+
+    var variable = variables.get(name);
+    if (variable != null) {
+      throw new TestRunnerException("The variable '" + name + "' is already defined");
+    }
+
+    listener.accept(name, ORIGINAL, defaultValue);
+    return new RunnerVariable(name, ORIGINAL, () -> defaultValue);
+  }
+
+  private RunnerVariableResolver copy() {
+    return new RunnerVariableResolver(variables, modifiers, listener);
+  }
+
+  public RunnerVariableResolver withVariable(String name, InnerVariable variable) {
+    variables.put(name, variable);
+    return this;
+  }
+
+  private RunnerVariableResolver withoutVariable(String name) {
+    variables.remove(name);
+    return this;
+  }
+
+  private RunnerVariableResolver withoutModifier(String name) {
+    modifiers.remove(name);
+    return this;
+  }
+
+  @FunctionalInterface
+  public interface Listener {
+
+    void accept(String name, VariableType type, Object value);
+
+  }
+
+  static final class InnerVariable {
+
+    private final Function<Context, ?> valueSupplier;
+
+    private final Map<String, Object> metadata = new HashMap<>();
+
+    InnerVariable(Function<Context, ?> valueSupplier) {
+      this.valueSupplier = valueSupplier;
+    }
+
+    InnerVariable(Function<Context, ?> valueSupplier, Map<String, Object> metadata) {
+      this.valueSupplier = valueSupplier;
+      this.metadata.putAll(metadata);
+    }
+  }
+
+  static final class InnerModifier {
+
+    private final Function<ContextView, ?> valueSupplier;
+
+    private final Map<String, Object> metadata = new HashMap<>();
+
+    InnerModifier(Function<ContextView, ?> valueSupplier, Map<String, Object> metadata) {
+      this.valueSupplier = valueSupplier;
+      this.metadata.putAll(metadata);
+    }
+  }
+}

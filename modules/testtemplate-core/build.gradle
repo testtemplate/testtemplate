@@ -1,0 +1,10 @@
+dependencies {
+  implementation project(':testtemplate-api')
+  implementation libs.opentest4j
+  implementation libs.slf4j.api
+
+  testImplementation libs.assertj
+  testImplementation libs.junit
+  testImplementation libs.logback
+  testImplementation libs.mockito.junit
+}

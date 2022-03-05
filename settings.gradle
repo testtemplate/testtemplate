@@ -1,6 +1,9 @@
 rootProject.name = 'testtemplate-root'
 
 include('testtemplate')
+include('testtemplate-api')
+include('testtemplate-core')
+include('testtemplate-junit5')
 
 rootProject.children.each {
   it.projectDir = file("modules/${it.name}")

@@ -1,6 +1,14 @@
 [versions]
 checkstyle = "9.3"
+junit = "5.8.2"
+mockito = "4.3.1"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version = "3.22.0" }
-junit = { module = "org.junit.jupiter:junit-jupiter", version = "5.8.2" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+logback = { module = "ch.qos.logback:logback-classic", version = "1.2.10" }
+mockito-core = { module ="org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+opentest4j = { module = "org.opentest4j:opentest4j", version = "1.2.0" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version = "1.7.33" }
