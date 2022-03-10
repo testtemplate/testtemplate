@@ -181,6 +181,11 @@ public final class TestBuilder {
         variables.put(variable, new TestVariable(variable, value, metadata));
         return InnerDefaultTestTemplateBuilder.this;
       }
+
+      @Override
+      public <M extends Extension<S>> M as(ExtensionFactory<S, M> factory) {
+        return factory.getExtension(this, variable);
+      }
     }
   }
 
@@ -326,6 +331,11 @@ public final class TestBuilder {
 
         modifiers.put(variable, new TestModifier(variable, value, metadata));
         return InnerAlternativeTestValidatorBuilder.this;
+      }
+
+      @Override
+      public <M extends Extension<S, R>> M as(ExtensionFactory<S, R, M> factory) {
+        return factory.getExtension(this, variable);
       }
     }
   }

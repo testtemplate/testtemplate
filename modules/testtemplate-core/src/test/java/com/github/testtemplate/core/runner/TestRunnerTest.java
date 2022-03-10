@@ -32,8 +32,7 @@ public class TestRunnerTest {
   private static final ContextualTemplate<Object> NO_OP_TEMPLATE = c -> null;
   private static final Set<TestVariable> EMPTY_VARIABLE_SET = Set.of();
   private static final Set<TestModifier> EMPTY_MODIFIER_SET = Set.of();
-  private static final ContextualValidator<Object> NO_OP_VALIDATOR = c -> {
-  };
+  private static final ContextualValidator<Object> NO_OP_VALIDATOR = c -> {};
   private static final Map<String, Object> EMPTY_ATTRIBUTE_MAP = Map.of();
 
   @Nested
@@ -77,9 +76,7 @@ public class TestRunnerTest {
       var test = new TestDefinition<>(
           TEST_NAME,
           DEFAULT,
-          c -> {
-            throw new Exception("This is expected");
-          },
+          c -> { throw new Exception("This is expected"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("This is expected"),
@@ -93,9 +90,7 @@ public class TestRunnerTest {
       var test = new TestDefinition<>(
           TEST_NAME,
           DEFAULT,
-          c -> {
-            throw new Exception("This is an exception");
-          },
+          c -> { throw new Exception("This is an exception"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("But expect another one"),
@@ -112,14 +107,10 @@ public class TestRunnerTest {
       var test = new TestDefinition<>(
           TEST_NAME,
           DEFAULT,
-          c -> {
-            throw new TestRunnerException("This is for internal purpose");
-          },
+          c -> { throw new TestRunnerException("This is for internal purpose"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
-          c -> {
-            throw new RuntimeException("Not expected");
-          },
+          c -> { throw new RuntimeException("Not expected"); },
           EMPTY_ATTRIBUTE_MAP);
 
       Assertions
@@ -248,9 +239,7 @@ public class TestRunnerTest {
       var test = new TestDefinition<>(
           TEST_NAME,
           DEFAULT,
-          c -> {
-            throw exception;
-          },
+          c -> { throw exception; },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
           NO_OP_VALIDATOR,

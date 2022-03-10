@@ -1,0 +1,9 @@
+dependencies {
+  implementation project(':testtemplate-api')
+
+  implementation libs.json.path
+
+  testImplementation libs.assertj
+  testImplementation libs.junit
+  testImplementation libs.mockito.junit
+}

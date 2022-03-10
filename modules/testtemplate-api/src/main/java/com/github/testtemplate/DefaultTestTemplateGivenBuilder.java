@@ -22,4 +22,15 @@ public interface DefaultTestTemplateGivenBuilder<S> {
   default DefaultTestTemplateBuilder<S> isNull() {
     return is(c -> null);
   }
+
+  <M extends Extension<S>> M as(ExtensionFactory<S, M> factory);
+
+  interface ExtensionFactory<S, M extends Extension<S>> {
+
+    M getExtension(DefaultTestTemplateGivenBuilder<S> builder, String variable);
+
+  }
+
+  interface Extension<S> {}
+
 }
