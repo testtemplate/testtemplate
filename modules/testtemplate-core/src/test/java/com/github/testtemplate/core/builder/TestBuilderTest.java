@@ -1,7 +1,7 @@
 package com.github.testtemplate.core.builder;
 
 import com.github.testtemplate.AlternativeTestTemplateExceptBuilder;
-import com.github.testtemplate.AlternativeTestValidationBuilder;
+import com.github.testtemplate.AlternativeTestValidatorBuilder;
 import com.github.testtemplate.ContextualTemplate;
 import com.github.testtemplate.ContextualValidator;
 import com.github.testtemplate.DefaultTestTemplateBuilder;
@@ -402,7 +402,7 @@ class TestBuilderTest {
       this.variable = variable;
     }
 
-    public AlternativeTestValidationBuilder<S, R> addSomethingSpecial() {
+    public AlternativeTestValidatorBuilder<S, R> addSomethingSpecial() {
       return builder.is(c -> "Super! " + c.get(variable));
     }
   }

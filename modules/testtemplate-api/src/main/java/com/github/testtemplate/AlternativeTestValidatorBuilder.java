@@ -1,6 +1,6 @@
 package com.github.testtemplate;
 
-public interface AlternativeTestValidationBuilder<S, R> {
+public interface AlternativeTestValidatorBuilder<S, R> {
 
   AlternativeTestTemplateExceptBuilder<S, R> except(String variable);
 

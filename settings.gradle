@@ -4,6 +4,7 @@ include('testtemplate')
 include('testtemplate-api')
 include('testtemplate-core')
 include('testtemplate-extension-json')
+include('testtemplate-extension-mockito')
 include('testtemplate-junit5')
 
 rootProject.children.each {
