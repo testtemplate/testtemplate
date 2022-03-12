@@ -1,7 +1,7 @@
 package com.github.testtemplate.extension.json;
 
 import com.github.testtemplate.AlternativeTestTemplateExceptBuilder;
-import com.github.testtemplate.AlternativeTestValidationBuilder;
+import com.github.testtemplate.AlternativeTestValidatorBuilder;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -36,7 +36,7 @@ public final class JsonExtension<S, R>
         this.path = path;
       }
 
-      public AlternativeTestValidationBuilder<S, R> is(Object value) {
+      public AlternativeTestValidatorBuilder<S, R> is(Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -47,7 +47,7 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidationBuilder<S, R> isAbsent() {
+      public AlternativeTestValidatorBuilder<S, R> isAbsent() {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -58,7 +58,7 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidationBuilder<S, R> hasExtra(Object value) {
+      public AlternativeTestValidatorBuilder<S, R> hasExtra(Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -69,7 +69,7 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidationBuilder<S, R> hasExtra(String key, Object value) {
+      public AlternativeTestValidatorBuilder<S, R> hasExtra(String key, Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {

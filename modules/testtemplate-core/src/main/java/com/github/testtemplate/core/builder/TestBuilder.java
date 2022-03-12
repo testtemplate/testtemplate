@@ -3,7 +3,7 @@ package com.github.testtemplate.core.builder;
 import com.github.testtemplate.AlternativeTestTemplateBuilder;
 import com.github.testtemplate.AlternativeTestTemplateExceptBuilder;
 import com.github.testtemplate.AlternativeTestTemplatePreBuilder;
-import com.github.testtemplate.AlternativeTestValidationBuilder;
+import com.github.testtemplate.AlternativeTestValidatorBuilder;
 import com.github.testtemplate.Context;
 import com.github.testtemplate.ContextView;
 import com.github.testtemplate.ContextualTemplate;
@@ -259,13 +259,13 @@ public final class TestBuilder {
     }
 
     @Override
-    public AlternativeTestValidationBuilder<S, R> sameAsDefault() {
+    public AlternativeTestValidatorBuilder<S, R> sameAsDefault() {
       return new InnerAlternativeTestValidatorBuilder<>(builder, name, attributes);
     }
   }
 
   private static final class InnerAlternativeTestValidatorBuilder<S, R>
-      implements AlternativeTestValidationBuilder<S, R> {
+      implements AlternativeTestValidatorBuilder<S, R> {
 
     private final InnerTestTemplateBuilder<S, R> builder;
 
@@ -324,7 +324,7 @@ public final class TestBuilder {
       }
 
       @Override
-      public AlternativeTestValidationBuilder<S, R> is(Function<ContextView, ?> value) {
+      public AlternativeTestValidatorBuilder<S, R> is(Function<ContextView, ?> value) {
         if (modifiers.containsKey(variable)) {
           throw new TestBuilderException("The modifier '" + variable + "' is already defined");
         }

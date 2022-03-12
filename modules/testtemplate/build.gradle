@@ -3,6 +3,8 @@ dependencies {
 
   implementation project(':testtemplate-core')
   implementation project(':testtemplate-junit5')
+  compileOnly project(':testtemplate-extension-json')
+  compileOnly project(':testtemplate-extension-mockito')
 
   testImplementation libs.assertj
   testImplementation libs.junit
