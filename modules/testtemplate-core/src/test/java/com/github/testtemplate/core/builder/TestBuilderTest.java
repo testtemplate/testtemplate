@@ -1,7 +1,11 @@
 package com.github.testtemplate.core.builder;
 
+import com.github.testtemplate.AlternativeTestTemplateExceptBuilder;
+import com.github.testtemplate.AlternativeTestValidationBuilder;
 import com.github.testtemplate.ContextualTemplate;
 import com.github.testtemplate.ContextualValidator;
+import com.github.testtemplate.DefaultTestTemplateBuilder;
+import com.github.testtemplate.DefaultTestTemplateGivenBuilder;
 import com.github.testtemplate.TestSuiteFactory;
 
 import org.assertj.core.api.Assertions;
@@ -69,6 +73,46 @@ class TestBuilderTest {
     assertThat(result)
         .extracting("name", "type")
         .containsExactly(tuple("simple default test", TestResultType.SUCCESS));
+  }
+
+  @Test
+  void buildShouldAllowExtensionForGivenVariables() {
+    var builder = TestBuilder
+        .builder(new SimpleTestSuiteFactory())
+        .defaultTest("simple default test with extension")
+        .given("greeting").as(simpleGivenExtension()).isSomethingSpecial()
+        .when(c -> c.get("greeting"))
+        .then(c -> assertThat(c.result()).isEqualTo("I am a potato!"));
+
+    var result = execute(builder.suite());
+
+    assertThat(result)
+        .extracting("name", "type")
+        .containsExactly(tuple("simple default test with extension", TestResultType.SUCCESS));
+  }
+
+  @Test
+  void buildShouldAllowExtensionForExceptVariables() {
+    var builder = TestBuilder
+        .builder(new SimpleTestSuiteFactory())
+        .defaultTest("simple default")
+        .given("greeting").is("I am a potato.")
+        .when(c -> c.get("greeting"))
+        .then(c -> assertThat(c.result()).isEqualTo("I am a potato."));
+
+    builder
+        .test("alternative with extension")
+        .sameAsDefault()
+        .except("greeting").as(simpleExceptExtension()).addSomethingSpecial()
+        .then(c -> assertThat(c.result()).isEqualTo("Super! I am a potato."));
+
+    var result = execute(builder.suite());
+
+    assertThat(result)
+        .extracting("name", "type")
+        .containsExactly(
+            tuple("simple default", TestResultType.SUCCESS),
+            tuple("alternative with extension", TestResultType.SUCCESS));
   }
 
   @Test
@@ -246,6 +290,14 @@ class TestBuilderTest {
     return results;
   }
 
+  private static <S> SimpleGivenExtensionFactory<S> simpleGivenExtension() {
+    return new SimpleGivenExtensionFactory<>();
+  }
+
+  private static <S, R> SimpleExceptExtensionFactory<S, R> simpleExceptExtension() {
+    return new SimpleExceptExtensionFactory<>();
+  }
+
   private static final class SimpleTestSuiteFactory implements TestSuiteFactory<List<TestSuiteFactory.Test>> {
 
     @Override
@@ -302,5 +354,56 @@ class TestBuilderTest {
     SUCCESS,
     FAILURE,
     SKIPPED
+  }
+
+  private static final class SimpleGivenExtensionFactory<S>
+      implements DefaultTestTemplateGivenBuilder.ExtensionFactory<S, SimpleGivenExtension<S>> {
+
+    @Override
+    public SimpleGivenExtension<S> getExtension(DefaultTestTemplateGivenBuilder<S> builder, String variable) {
+      return new SimpleGivenExtension<>(builder);
+    }
+  }
+
+  private static final class SimpleGivenExtension<S>
+      implements DefaultTestTemplateGivenBuilder.Extension<S> {
+
+    private final DefaultTestTemplateGivenBuilder<S> builder;
+
+    private SimpleGivenExtension(DefaultTestTemplateGivenBuilder<S> builder) {
+      this.builder = builder;
+    }
+
+    public DefaultTestTemplateBuilder<S> isSomethingSpecial() {
+      return builder.is("I am a potato!");
+    }
+  }
+
+  private static final class SimpleExceptExtensionFactory<S, R>
+      implements AlternativeTestTemplateExceptBuilder.ExtensionFactory<S, R, SimpleExceptExtension<S, R>> {
+
+    @Override
+    public SimpleExceptExtension<S, R> getExtension(
+        AlternativeTestTemplateExceptBuilder<S, R> builder,
+        String variable) {
+      return new SimpleExceptExtension<>(builder, variable);
+    }
+  }
+
+  private static final class SimpleExceptExtension<S, R>
+      implements AlternativeTestTemplateExceptBuilder.Extension<S, R> {
+
+    private final AlternativeTestTemplateExceptBuilder<S, R> builder;
+
+    private final String variable;
+
+    private SimpleExceptExtension(AlternativeTestTemplateExceptBuilder<S, R> builder, String variable) {
+      this.builder = builder;
+      this.variable = variable;
+    }
+
+    public AlternativeTestValidationBuilder<S, R> addSomethingSpecial() {
+      return builder.is(c -> "Super! " + c.get(variable));
+    }
   }
 }

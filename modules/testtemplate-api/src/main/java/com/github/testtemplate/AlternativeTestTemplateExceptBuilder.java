@@ -20,4 +20,15 @@ public interface AlternativeTestTemplateExceptBuilder<S, R> {
   default AlternativeTestValidationBuilder<S, R> isNull() {
     return is(c -> null);
   }
+
+  <M extends Extension<S, R>> M as(ExtensionFactory<S, R, M> factory);
+
+  interface ExtensionFactory<S, R, M extends Extension<S, R>> {
+
+    M getExtension(AlternativeTestTemplateExceptBuilder<S, R> builder, String variable);
+
+  }
+
+  interface Extension<S, R> {}
+
 }
