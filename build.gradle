@@ -1,4 +1,4 @@
-group = 'com.github.testtemplate'
+group = 'io.github.testtemplate'
 version = '0.0.0'
 
 subprojects {
