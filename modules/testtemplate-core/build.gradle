@@ -1,3 +1,7 @@
+description = 'A fluent builder to write a suite of test from a default one and its alternatives'
+
+apply from: "$rootDir/gradle/java-publication.gradle"
+
 dependencies {
   implementation project(':testtemplate-api')
   implementation libs.opentest4j

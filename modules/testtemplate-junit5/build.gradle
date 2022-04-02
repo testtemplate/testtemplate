@@ -1,3 +1,7 @@
+description = 'Support of JUnit 5'
+
+apply from: "$rootDir/gradle/java-publication.gradle"
+
 dependencies {
   api libs.junit.api
   implementation project(':testtemplate-api')

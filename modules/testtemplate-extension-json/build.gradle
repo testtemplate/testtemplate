@@ -1,3 +1,7 @@
+description = 'A test template builder extension to support JSON values'
+
+apply from: "$rootDir/gradle/java-publication.gradle"
+
 dependencies {
   implementation project(':testtemplate-api')
 
