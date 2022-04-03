@@ -1,0 +1,64 @@
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+
+publishing {
+  publications {
+    javaLibrary(MavenPublication) {
+      from components.java
+
+      pom {
+        name = project.name
+        description = project.description
+        url = 'https://github.com/testtemplate/testtemplate'
+        licenses {
+          license {
+            name = 'The MIT License'
+            url = 'https://github.com/testtemplate/testtemplate/blob/master/LICENSE'
+          }
+        }
+        developers {
+          developer {
+            name = 'Guillaume Girard'
+          }
+        }
+        scm {
+          url = 'https://github.com/testtemplate/testtemplate.git'
+        }
+        issueManagement {
+          url = 'https://github.com/testtemplate/testtemplate/issues'
+          system = 'GitHub issues'
+        }
+        ciManagement {
+          url = 'https://github.com/testtemplate/testtemplate/actions'
+          system = 'GitHub actions'
+        }
+      }
+    }
+  }
+
+  repositories {
+    maven {
+      name = "OSSRH"
+
+      if (!isReleasedVersion) {
+        url "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+      } else {
+        url "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+      }
+
+      credentials {
+        username = findProperty("ossrhUsername")
+        password = findProperty("ossrhPassword")
+      }
+    }
+  }
+}
+
+signing {
+  def signingKey = findProperty("signingKey")
+  def signingPwd = findProperty("signingPassword")
+  if (signingKey) {
+    useInMemoryPgpKeys(signingKey, signingPwd)
+    sign publishing.publications.javaLibrary
+  }
+}

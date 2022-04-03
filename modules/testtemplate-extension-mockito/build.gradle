@@ -1,3 +1,7 @@
+description = 'A test template builder extension to support Mockito mocks'
+
+apply from: "$rootDir/gradle/java-publication.gradle"
+
 dependencies {
   implementation project(':testtemplate-api')
 
