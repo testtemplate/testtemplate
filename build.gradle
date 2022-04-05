@@ -1,5 +1,8 @@
+plugins {
+  alias(libs.plugins.shipkit)
+}
+
 group = 'io.github.testtemplate'
-version = '0.0.0-SNAPSHOT'
 
 ext {
   isReleasedVersion = !project.version.endsWith("-SNAPSHOT")
