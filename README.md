@@ -1,4 +1,4 @@
-<img src="./logo-600.png" alt="drawing" width="600"/>
+<img src="./logo.png" alt="test template - logo" width="640"/>
 
 [![Build Status](https://github.com/testtemplate/testtemplate/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/testtemplate/testtemplate/actions)
 [![License](https://img.shields.io/github/license/testtemplate/testtemplate)](https://github.com/testtemplate/testtemplate/blob/master/LICENSE)
