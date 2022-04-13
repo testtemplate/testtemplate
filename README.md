@@ -1,6 +1,7 @@
 <img src="./logo-640.png" alt="test template - logo" width="640"/>
 
-[![Build Status](https://github.com/testtemplate/testtemplate/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/testtemplate/testtemplate/actions)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/testtemplate/testtemplate?sort=semver)](https://github.com/testtemplate/testtemplate/releases)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/testtemplate/testtemplate/build/master)](https://github.com/testtemplate/testtemplate/actions)
 [![License](https://img.shields.io/github/license/testtemplate/testtemplate)](https://github.com/testtemplate/testtemplate/blob/master/LICENSE)
 
 TestTemplate is a java library that provides a fluent builder to write a suite of test from a default one and its 
