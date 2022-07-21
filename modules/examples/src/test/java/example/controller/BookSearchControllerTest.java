@@ -3,8 +3,8 @@ package example.controller;
 import io.github.testtemplate.TestTemplate;
 
 import example.service.Book;
-import example.service.BookNotFoundException;
 import example.service.BookService;
+import example.service.NotFoundException;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +96,7 @@ class BookSearchControllerTest {
     return TestTemplate
         .defaultTest("should return a book")
         .given("service").as(mock()).use(bookService)
-            .invoking(mock -> mock.read(any())).willThrow(BookNotFoundException::new)
+            .invoking(mock -> mock.read(any())).willThrow(NotFoundException::new)
             .invoking(mock -> mock.read("1000")).willReturn(Mono.just(BOOK_1000))
         .when(ctx -> client.get().uri("/books/{id}", ctx.given("requested-book-id").is(BOOK_1000.getId())).exchange())
         .then(ctx -> ctx.result()
