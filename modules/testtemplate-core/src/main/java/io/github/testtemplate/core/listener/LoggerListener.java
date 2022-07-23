@@ -139,9 +139,7 @@ public class LoggerListener implements TestListener {
     }
 
     public void addVariable(String name, VariableType type, Object value) {
-      if (!variables.containsKey(name)) {
-        variables.put(name, new LogContextVariable(name, type, value));
-      }
+      variables.put(name, new LogContextVariable(name, type, value));
     }
   }
 
