@@ -1,7 +1,7 @@
 [versions]
 checkstyle = "9.3"
 junit = "5.9.2"
-mockito = "5.2.0"
+mockito = "5.4.0"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version = "3.22.0" }
