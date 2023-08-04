@@ -4,7 +4,7 @@ junit = "5.10.0"
 mockito = "5.4.0"
 
 [libraries]
-assertj = { module = "org.assertj:assertj-core", version = "3.22.0" }
+assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }
 json-path = { module = "com.jayway.jsonpath:json-path", version = "2.8.0" }
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
