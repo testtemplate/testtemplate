@@ -44,8 +44,6 @@ public interface TestListener {
 
     Object getValue();
 
-    boolean isValueLoaded();
-
     Object getMetadata(String key);
 
     Object getMetadata(String key, Object defaultValue);

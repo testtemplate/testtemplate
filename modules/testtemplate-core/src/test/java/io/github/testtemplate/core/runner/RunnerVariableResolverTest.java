@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.github.testtemplate.TestListener.VariableType.MODIFIED;
 import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
@@ -191,6 +192,37 @@ class RunnerVariableResolverTest {
         .assertThatThrownBy(() -> variableResolver.getVariableOrDefault("greeting", "welcome"))
         .isInstanceOf(TestRunnerException.class)
         .hasMessage("The variable 'greeting' is already defined");
+  }
+
+  @Test
+  void getVariableShouldCallSupplierOnlyOnce() {
+    var number1 = new AtomicInteger(1000);
+    var number2 = new AtomicInteger(2000);
+    var number3 = new AtomicInteger(3000);
+
+    var variableResolver = new RunnerVariableResolver(
+        Set.of(
+            new TestVariable("number-1", c -> number1.getAndIncrement()),
+            new TestVariable("number-2", c -> { throw new RuntimeException("not reachable"); }),
+            new TestVariable("number-3", c -> number3.getAndIncrement())),
+        Set.of(
+            new TestModifier("number-2", c -> number2.getAndIncrement()),
+            new TestModifier("number-3", c -> c.<Integer>get("number-3") + 1000)));
+
+    // Make few calls
+    variableResolver.getVariable("number-1").getValue();
+    variableResolver.getVariable("number-1").getValue();
+    variableResolver.getVariable("number-1").getValue();
+    variableResolver.getVariable("number-2").getValue();
+    variableResolver.getVariable("number-2").getValue();
+    variableResolver.getVariable("number-2").getValue();
+    variableResolver.getVariable("number-3").getValue();
+    variableResolver.getVariable("number-3").getValue();
+    variableResolver.getVariable("number-3").getValue();
+
+    assertThat(variableResolver.getVariable("number-1").getValue()).isEqualTo(1000);
+    assertThat(variableResolver.getVariable("number-2").getValue()).isEqualTo(2000);
+    assertThat(variableResolver.getVariable("number-3").getValue()).isEqualTo(4000);
   }
 
   @Nested

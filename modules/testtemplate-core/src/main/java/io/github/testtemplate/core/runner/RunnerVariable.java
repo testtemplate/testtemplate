@@ -17,10 +17,6 @@ final class RunnerVariable implements Variable {
 
   private final Supplier<Object> valueSupplier;
 
-  private Object value;
-
-  private boolean loaded;
-
   private final Map<String, Object> metadata = new HashMap<>();
 
   RunnerVariable(String name, VariableType type, Supplier<Object> valueSupplier) {
@@ -46,16 +42,7 @@ final class RunnerVariable implements Variable {
 
   @Override
   public Object getValue() {
-    if (!loaded) {
-      value = valueSupplier.get();
-      loaded = true;
-    }
-    return value;
-  }
-
-  @Override
-  public boolean isValueLoaded() {
-    return loaded;
+    return valueSupplier.get();
   }
 
   @Override

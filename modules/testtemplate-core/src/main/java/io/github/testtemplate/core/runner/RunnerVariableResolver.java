@@ -143,11 +143,11 @@ final class RunnerVariableResolver {
     private final Map<String, Object> metadata = new HashMap<>();
 
     InnerVariable(Function<Context, ?> valueSupplier) {
-      this.valueSupplier = valueSupplier;
+      this.valueSupplier = new CachedFunction<>(valueSupplier);
     }
 
     InnerVariable(Function<Context, ?> valueSupplier, Map<String, Object> metadata) {
-      this.valueSupplier = valueSupplier;
+      this.valueSupplier = new CachedFunction<>(valueSupplier);
       this.metadata.putAll(metadata);
     }
   }
@@ -159,8 +159,30 @@ final class RunnerVariableResolver {
     private final Map<String, Object> metadata = new HashMap<>();
 
     InnerModifier(Function<ContextView, ?> valueSupplier, Map<String, Object> metadata) {
-      this.valueSupplier = valueSupplier;
+      this.valueSupplier = new CachedFunction<>(valueSupplier);
       this.metadata.putAll(metadata);
+    }
+  }
+
+  static final class CachedFunction<T, R> implements Function<T, R> {
+
+    private final Function<T, R> delegate;
+
+    private boolean valueLoaded;
+
+    private R value;
+
+    CachedFunction(Function<T, R> delegate) {
+      this.delegate = delegate;
+    }
+
+    @Override
+    public R apply(T t) {
+      if (!valueLoaded) {
+        value = delegate.apply(t);
+        valueLoaded = true;
+      }
+      return value;
     }
   }
 }

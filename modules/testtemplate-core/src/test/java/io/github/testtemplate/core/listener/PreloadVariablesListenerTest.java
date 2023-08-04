@@ -64,11 +64,6 @@ class PreloadVariablesListenerTest {
     }
 
     @Override
-    public boolean isValueLoaded() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Object getMetadata(String key) {
       return metadata.get(key);
     }
