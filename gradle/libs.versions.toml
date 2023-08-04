@@ -1,14 +1,14 @@
 [versions]
 checkstyle = "9.3"
-junit = "5.9.2"
-mockito = "5.2.0"
+junit = "5.10.0"
+mockito = "5.4.0"
 
 [libraries]
 assertj = { module = "org.assertj:assertj-core", version = "3.24.2" }
-json-path = { module = "com.jayway.jsonpath:json-path", version = "2.7.0" }
+json-path = { module = "com.jayway.jsonpath:json-path", version = "2.8.0" }
 junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
-logback = { module = "ch.qos.logback:logback-classic", version = "1.2.10" }
+logback = { module = "ch.qos.logback:logback-classic", version = "1.4.8" }
 mockito-core = { module ="org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 opentest4j = { module = "org.opentest4j:opentest4j", version = "1.2.0" }
