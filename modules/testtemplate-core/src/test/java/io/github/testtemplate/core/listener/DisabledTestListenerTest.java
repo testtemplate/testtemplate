@@ -58,7 +58,7 @@ class DisabledTestListenerTest {
     listener.before(test);
   }
 
-  private static class TestTest implements TestListener.Test {
+  private static final class TestTest implements TestListener.Test {
 
     private final Map<String, Object> attributes = new HashMap<>();
 

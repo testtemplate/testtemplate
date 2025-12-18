@@ -1,5 +1,5 @@
 plugins {
-  id 'org.springframework.boot' version '2.6.6'
+  id 'org.springframework.boot' version '3.5.8'
 }
 
 apply plugin: 'io.spring.dependency-management'
@@ -15,4 +15,6 @@ dependencies {
 
   testImplementation libs.assertj
   testImplementation libs.junit
+
+  testRuntimeOnly libs.junit.runtime
 }

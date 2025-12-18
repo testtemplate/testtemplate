@@ -11,4 +11,6 @@ dependencies {
   testImplementation libs.junit
   testImplementation libs.logback
   testImplementation libs.mockito.junit
+
+  testRuntimeOnly libs.junit.runtime
 }

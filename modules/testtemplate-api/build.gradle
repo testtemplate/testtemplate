@@ -2,4 +2,6 @@ description = 'A fluent builder to write a suite of test from a default one and 
 
 apply from: "$rootDir/gradle/java-publication.gradle"
 
-dependencies {}
+dependencies {
+    testRuntimeOnly libs.junit.runtime
+}

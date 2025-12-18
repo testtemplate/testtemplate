@@ -10,4 +10,6 @@ dependencies {
   testImplementation libs.assertj
   testImplementation libs.junit
   testImplementation libs.mockito.junit
+
+  testRuntimeOnly libs.junit.runtime
 }
