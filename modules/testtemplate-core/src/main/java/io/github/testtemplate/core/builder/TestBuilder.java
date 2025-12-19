@@ -16,7 +16,7 @@ import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.TestTemplateBuilder;
 import io.github.testtemplate.TestTemplatePreBuilder;
 import io.github.testtemplate.core.TestDefinition;
-import io.github.testtemplate.core.TestInstance;
+import io.github.testtemplate.core.TestExecutorInstance;
 import io.github.testtemplate.core.TestModifier;
 import io.github.testtemplate.core.TestVariable;
 import io.github.testtemplate.core.listener.DisabledTestListener;
@@ -101,7 +101,7 @@ public final class TestBuilder {
     public S suite() {
       var listeners = List.of(new DisabledTestListener(), new LoggerListener(), new PreloadVariablesListener());
       var runner = new TestRunner(listeners);
-      var instances = tests.stream().map(t -> new TestInstance<>(t, runner)).collect(Collectors.toList());
+      var instances = tests.stream().map(t -> new TestExecutorInstance<>(t, runner)).collect(Collectors.toList());
       return factory.getSuite(instances);
     }
   }

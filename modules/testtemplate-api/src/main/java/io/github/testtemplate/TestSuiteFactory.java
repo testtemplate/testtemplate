@@ -10,7 +10,17 @@ public interface TestSuiteFactory<S> {
 
     String getName();
 
+  }
+
+  interface TestExecutor extends Test {
+
     void execute() throws Throwable;
+
+  }
+
+  interface TestGroup extends Test {
+
+    List<Test> getTests();
 
   }
 }

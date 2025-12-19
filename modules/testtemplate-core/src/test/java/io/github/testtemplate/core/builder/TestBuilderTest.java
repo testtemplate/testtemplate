@@ -279,8 +279,15 @@ class TestBuilderTest {
     List<TestResult> results = new ArrayList<>();
     for (TestSuiteFactory.Test test : tests) {
       try {
-        test.execute();
-        results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
+        if (test instanceof TestSuiteFactory.TestExecutor) {
+          ((TestSuiteFactory.TestExecutor) test).execute();
+          results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
+        } else if (test instanceof TestSuiteFactory.TestGroup) {
+          results.addAll(execute(((TestSuiteFactory.TestGroup) test).getTests()));
+          results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
+        } else {
+          throw new IllegalAccessException("Unsupported test suite type: " + test.getClass().getName());
+        }
       } catch (TestAbortedException e) {
         results.add(new TestResult(test.getName(), TestResultType.SKIPPED));
       } catch (Throwable t) {
