@@ -8,8 +8,8 @@ import static java.lang.Boolean.TRUE;
 
 public final class DisabledTestListener implements TestListener {
 
-  public static final String ATTRIBUTE_TEST_DISABLED = "ca.guig.testtemplate.test.disabled";
-  public static final String ATTRIBUTE_TEST_DISABLED_REASON = "ca.guig.testtemplate.test.disabled-reason";
+  public static final String ATTRIBUTE_TEST_DISABLED = "io.github.testtemplate.test.disabled";
+  public static final String ATTRIBUTE_TEST_DISABLED_REASON = "io.github.testtemplate.test.disabled-reason";
 
   @Override
   public void before(Test test) {

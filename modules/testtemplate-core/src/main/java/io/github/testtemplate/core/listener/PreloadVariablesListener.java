@@ -6,7 +6,7 @@ import static java.lang.Boolean.TRUE;
 
 public class PreloadVariablesListener implements TestListener {
 
-  public static final String METADATA_PRELOAD_VARIABLE = "ca.guig.testtemplate.variable.preload";
+  public static final String METADATA_PRELOAD_VARIABLE = "io.github.testtemplate.variable.preload";
 
   @Override
   public void before(Test test) {

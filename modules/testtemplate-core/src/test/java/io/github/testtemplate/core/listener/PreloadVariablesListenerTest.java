@@ -21,9 +21,9 @@ class PreloadVariablesListenerTest {
   @Test
   void shouldCallGetValueOnVariableWhenMetadataIsSetToTrue() {
     Mockito.doReturn(Set.of("var-a", "var-b", "var-c")).when(test).getVariableNames();
-    var varA = Mockito.spy(new TestVariable("ca.guig.testtemplate.variable.preload", true));
+    var varA = Mockito.spy(new TestVariable("io.github.testtemplate.variable.preload", true));
     Mockito.doReturn(varA).when(test).getVariable("var-a");
-    var varB = Mockito.spy(new TestVariable("ca.guig.testtemplate.variable.preload", false));
+    var varB = Mockito.spy(new TestVariable("io.github.testtemplate.variable.preload", false));
     Mockito.doReturn(varB).when(test).getVariable("var-b");
     var varC = Mockito.spy(new TestVariable());
     Mockito.doReturn(varC).when(test).getVariable("var-c");

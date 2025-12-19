@@ -17,7 +17,7 @@ public class LoggerListener implements TestListener {
 
   private static final Logger LOGGER = getLogger(LoggerListener.class);
 
-  private static final String KEY_LOG_CONTEXT = "ca.guig.testtemplate.core.listener.LoggerListener.context";
+  private static final String KEY_LOG_CONTEXT = "io.github.testtemplate.core.listener.LoggerListener.context";
 
   @Override
   public void before(Test test) {

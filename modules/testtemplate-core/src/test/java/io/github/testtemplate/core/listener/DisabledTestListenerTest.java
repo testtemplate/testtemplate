@@ -15,8 +15,8 @@ class DisabledTestListenerTest {
   @Test
   void shouldThrowExceptionWhenAttributeIsSetToTrue() {
     var test = new TestTest();
-    test.setAttribute("ca.guig.testtemplate.test.disabled", true);
-    test.setAttribute("ca.guig.testtemplate.test.disabled-reason", "this is a test");
+    test.setAttribute("io.github.testtemplate.test.disabled", true);
+    test.setAttribute("io.github.testtemplate.test.disabled-reason", "this is a test");
 
     var listener = new DisabledTestListener();
 
@@ -29,7 +29,7 @@ class DisabledTestListenerTest {
   @Test
   void shouldThrowExceptionWithNullReasonWhenReasonIsUndefined() {
     var test = new TestTest();
-    test.setAttribute("ca.guig.testtemplate.test.disabled", true);
+    test.setAttribute("io.github.testtemplate.test.disabled", true);
 
     var listener = new DisabledTestListener();
 
@@ -42,7 +42,7 @@ class DisabledTestListenerTest {
   @Test
   void shouldDoNothingWhenAttributeIsSetToFalse() {
     var test = new TestTest();
-    test.setAttribute("ca.guig.testtemplate.test.disabled", false);
+    test.setAttribute("io.github.testtemplate.test.disabled", false);
 
     var listener = new DisabledTestListener();
 
