@@ -20,7 +20,7 @@ public interface TestSuiteFactory<S> {
 
   interface TestGroup extends Test {
 
-    List<Test> getTests();
+    List<? extends Test> getTests();
 
   }
 }

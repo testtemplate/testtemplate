@@ -21,20 +21,20 @@ class PersonNameUtilsTest {
         .when(ctx -> PersonNameUtils.formatName(ctx.get("first-name"), ctx.get("last-name")))
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown, Alice"))
 
-        .test("should be formatted with last name when first name is null")
+        .test("should be formatted with last name when first name is null, empty or blank")
         .sameAsDefault()
-        .except("first-name").isNull()
+        .except("first-name").isAnyOf(null, "", "  ")
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
 
-        .test("should be formatted with last name when first name is empty")
-        .sameAsDefault()
-        .except("first-name").is("")
-        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
-
-        .test("should be formatted with last name when first name is blank")
-        .sameAsDefault()
-        .except("first-name").is("  ")
-        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
+//        .test("should be formatted with last name when first name is empty")
+//        .sameAsDefault()
+//        .except("first-name").is("")
+//        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
+//
+//        .test("should be formatted with last name when first name is blank")
+//        .sameAsDefault()
+//        .except("first-name").is("  ")
+//        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
 
         .test("should throw an exception when last is null")
         .sameAsDefault()

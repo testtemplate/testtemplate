@@ -275,7 +275,7 @@ class TestBuilderTest {
     assertThat(check.get()).isEqualTo(12);
   }
 
-  private static List<TestResult> execute(List<TestSuiteFactory.Test> tests) {
+  private static List<TestResult> execute(List<? extends TestSuiteFactory.Test> tests) {
     List<TestResult> results = new ArrayList<>();
     for (TestSuiteFactory.Test test : tests) {
       try {

@@ -5,6 +5,7 @@ import io.github.testtemplate.ContextualValidator;
 import io.github.testtemplate.TestListener;
 import io.github.testtemplate.core.TestDefinition;
 import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
 
 import org.assertj.core.api.Assertions;
@@ -32,6 +33,7 @@ public class TestRunnerTest {
   private static final ContextualTemplate<Object> NO_OP_TEMPLATE = c -> null;
   private static final Set<TestVariable> EMPTY_VARIABLE_SET = Set.of();
   private static final Set<TestModifier> EMPTY_MODIFIER_SET = Set.of();
+  private static final Set<TestParameter> EMPTY_PARAMETER_SET = Set.of();
   private static final ContextualValidator<Object> NO_OP_VALIDATOR = c -> {};
   private static final Map<String, Object> EMPTY_ATTRIBUTE_MAP = Map.of();
 
@@ -48,6 +50,7 @@ public class TestRunnerTest {
           c -> "This is the result of the test",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.result()).isEqualTo("This is the result of the test"),
           EMPTY_ATTRIBUTE_MAP);
 
@@ -62,6 +65,7 @@ public class TestRunnerTest {
           c -> "This is the result of the test",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.result()).isEqualTo("But we expect something else"),
           EMPTY_ATTRIBUTE_MAP);
 
@@ -79,6 +83,7 @@ public class TestRunnerTest {
           c -> { throw new Exception("This is expected"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("This is expected"),
           EMPTY_ATTRIBUTE_MAP);
 
@@ -93,6 +98,7 @@ public class TestRunnerTest {
           c -> { throw new Exception("This is an exception"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("But expect another one"),
           EMPTY_ATTRIBUTE_MAP);
 
@@ -110,6 +116,7 @@ public class TestRunnerTest {
           c -> { throw new TestRunnerException("This is for internal purpose"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> { throw new RuntimeException("Not expected"); },
           EMPTY_ATTRIBUTE_MAP);
 
@@ -135,6 +142,7 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
@@ -156,6 +164,7 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
@@ -177,6 +186,7 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> fail(),
           EMPTY_ATTRIBUTE_MAP);
 
@@ -200,6 +210,7 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
@@ -218,6 +229,7 @@ public class TestRunnerTest {
           c -> "welcome",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
@@ -242,6 +254,7 @@ public class TestRunnerTest {
           c -> { throw exception; },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
@@ -264,6 +277,7 @@ public class TestRunnerTest {
           c -> c.get("greeting"),
           Set.of(new TestVariable("greeting", c -> "welcome")),
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 

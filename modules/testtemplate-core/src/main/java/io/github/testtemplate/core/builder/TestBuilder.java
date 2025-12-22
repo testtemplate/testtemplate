@@ -16,13 +16,14 @@ import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.TestTemplateBuilder;
 import io.github.testtemplate.TestTemplatePreBuilder;
 import io.github.testtemplate.core.TestDefinition;
-import io.github.testtemplate.core.TestExecutorInstance;
+import io.github.testtemplate.core.TestInstance;
 import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
 import io.github.testtemplate.core.listener.DisabledTestListener;
 import io.github.testtemplate.core.listener.LoggerListener;
 import io.github.testtemplate.core.listener.PreloadVariablesListener;
-import io.github.testtemplate.core.runner.TestRunner;
+import io.github.testtemplate.core.runner.TestRunnerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static io.github.testtemplate.TestType.ALTERNATIVE;
 import static io.github.testtemplate.TestType.DEFAULT;
@@ -100,8 +100,8 @@ public final class TestBuilder {
     @Override
     public S suite() {
       var listeners = List.of(new DisabledTestListener(), new LoggerListener(), new PreloadVariablesListener());
-      var runner = new TestRunner(listeners);
-      var instances = tests.stream().map(t -> new TestExecutorInstance<>(t, runner)).collect(Collectors.toList());
+      var runnerFactory = new TestRunnerFactory(listeners);
+      var instances = TestInstance.allOf(tests, runnerFactory);
       return factory.getSuite(instances);
     }
   }
@@ -221,11 +221,12 @@ public final class TestBuilder {
     @Override
     public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
       var builder = new InnerTestTemplateBuilder<>(factory, template, variables, globalAttributes);
-      builder.tests.add(new TestDefinition<R>(
+      builder.tests.add(new TestDefinition<>(
           name,
           DEFAULT,
           template,
           variables.values(),
+          emptyList(),
           emptyList(),
           validator,
           attributes));
@@ -273,6 +274,8 @@ public final class TestBuilder {
 
     private final Map<String, TestModifier> modifiers = new LinkedHashMap<>();
 
+    private final Map<String, TestParameter> parameters = new LinkedHashMap<>();
+
     private final Map<String, Object> attributes;
 
     private InnerAlternativeTestValidatorBuilder(
@@ -297,6 +300,7 @@ public final class TestBuilder {
           builder.template,
           builder.variables.values(),
           modifiers.values(),
+          parameters.values(),
           validator,
           attributes));
       return builder;
@@ -325,11 +329,21 @@ public final class TestBuilder {
 
       @Override
       public AlternativeTestValidatorBuilder<S, R> is(Function<ContextView, ?> value) {
-        if (modifiers.containsKey(variable)) {
+        if (modifiers.containsKey(variable) ||  parameters.containsKey(variable)) {
           throw new TestBuilderException("The modifier '" + variable + "' is already defined");
         }
 
         modifiers.put(variable, new TestModifier(variable, value, metadata));
+        return InnerAlternativeTestValidatorBuilder.this;
+      }
+
+      @Override
+      public AlternativeTestValidatorBuilder<S, R> isAnyOf(List<Function<ContextView, ?>> values) {
+        if (modifiers.containsKey(variable) ||  parameters.containsKey(variable)) {
+          throw new TestBuilderException("The modifier '" + variable + "' is already defined");
+        }
+
+        parameters.put(variable, new TestParameter(variable, values, metadata));
         return InnerAlternativeTestValidatorBuilder.this;
       }
 

@@ -56,7 +56,7 @@ public class LoggerListener implements TestListener {
     sb.append("\n");
 
     var variables = context.getVariables();
-    if (variables.size() > 0) {
+    if (!variables.isEmpty()) {
       int length = getLongerVariableLength(variables);
 
       sb.append("Variables:\n");

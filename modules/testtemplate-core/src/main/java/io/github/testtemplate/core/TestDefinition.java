@@ -15,7 +15,7 @@ import static java.util.Collections.unmodifiableMap;
 
 public final class TestDefinition<R> {
 
-  private final String name;
+  private String name;
 
   private final TestType type;
 
@@ -24,6 +24,8 @@ public final class TestDefinition<R> {
   private final List<TestVariable> variables = new ArrayList<>();
 
   private final List<TestModifier> modifiers = new ArrayList<>();
+
+  private final List<TestParameter> parameters = new ArrayList<>();
 
   private final ContextualValidator<R> validator;
 
@@ -35,6 +37,7 @@ public final class TestDefinition<R> {
       ContextualTemplate<R> template,
       Collection<TestVariable> variables,
       Collection<TestModifier> modifiers,
+      Collection<TestParameter> parameters,
       ContextualValidator<R> validator,
       Map<String, Object> attributes) {
     this.name = name;
@@ -42,6 +45,7 @@ public final class TestDefinition<R> {
     this.template = template;
     this.variables.addAll(variables);
     this.modifiers.addAll(modifiers);
+    this.parameters.addAll(parameters);
     this.validator = validator;
     this.attributes.putAll(attributes);
   }
@@ -66,11 +70,57 @@ public final class TestDefinition<R> {
     return unmodifiableList(modifiers);
   }
 
+  public boolean isParameterized() {
+    return !parameters.isEmpty();
+  }
+
+  public List<TestDefinition<R>> deparameterize() {
+    var newTests = new ArrayList<TestDefinition<R>>();
+
+    var firstParameter = parameters.getFirst();
+    for (int i = 0; i < firstParameter.getValueSuppliers().size(); i++) {
+      var newTest = this.copy();
+
+      for (var parameter : parameters) {
+        if (parameter.getGroup().equals(firstParameter.getGroup())) {
+          newTest.withModifier(parameter.deparameterize(i));
+        }
+      }
+
+      newTest.withoutParameterGroup(firstParameter.getGroup());
+
+      newTest.withName("when " + firstParameter.getName() + " is ${" + firstParameter.getName() + "}");
+
+      newTests.add(newTest);
+    }
+
+    return newTests;
+  }
+
   public ContextualValidator<R> getValidator() {
     return validator;
   }
 
   public Map<String, Object> getAttributes() {
     return unmodifiableMap(attributes);
+  }
+
+  private TestDefinition<R> copy() {
+    return new TestDefinition<>(name, type, template, variables, modifiers, parameters, validator, attributes);
+  }
+
+  private TestDefinition<R> withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  private TestDefinition<R> withModifier(TestModifier modifier) {
+    modifiers.add(modifier);
+    return this;
+  }
+
+  private TestDefinition<R> withoutParameterGroup(String group) {
+    parameters.removeIf(p -> p.getGroup().equals(group));
+    return this;
   }
 }
