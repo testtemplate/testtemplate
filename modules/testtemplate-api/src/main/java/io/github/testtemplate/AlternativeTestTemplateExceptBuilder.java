@@ -7,17 +7,17 @@ public interface AlternativeTestTemplateExceptBuilder<S, R> {
 
   AlternativeTestTemplateExceptBuilder<S, R> metadata(String key, Object value);
 
-  AlternativeTestValidatorBuilder<S, R> is(Function<ContextView, ?> value);
+  AlternativeTestTemplateExceptPostBuilder<S, R> is(Function<ContextView, ?> value);
 
-  default AlternativeTestValidatorBuilder<S, R> is(Supplier<?> value) {
+  default AlternativeTestTemplateExceptPostBuilder<S, R> is(Supplier<?> value) {
     return is(c -> value);
   }
 
-  default AlternativeTestValidatorBuilder<S, R> is(Object value) {
+  default AlternativeTestTemplateExceptPostBuilder<S, R> is(Object value) {
     return is(c -> value);
   }
 
-  default AlternativeTestValidatorBuilder<S, R> isNull() {
+  default AlternativeTestTemplateExceptPostBuilder<S, R> isNull() {
     return is(c -> null);
   }
 

@@ -2,6 +2,7 @@ package io.github.testtemplate.core.builder;
 
 import io.github.testtemplate.AlternativeTestTemplateBuilder;
 import io.github.testtemplate.AlternativeTestTemplateExceptBuilder;
+import io.github.testtemplate.AlternativeTestTemplateExceptPostBuilder;
 import io.github.testtemplate.AlternativeTestTemplatePreBuilder;
 import io.github.testtemplate.AlternativeTestValidatorBuilder;
 import io.github.testtemplate.Context;
@@ -273,6 +274,8 @@ public final class TestBuilder {
 
     private final Map<String, TestModifier> modifiers = new LinkedHashMap<>();
 
+    private final Map<String, Object> parameters = new LinkedHashMap<>();
+
     private final Map<String, Object> attributes;
 
     private InnerAlternativeTestValidatorBuilder(
@@ -324,7 +327,7 @@ public final class TestBuilder {
       }
 
       @Override
-      public AlternativeTestValidatorBuilder<S, R> is(Function<ContextView, ?> value) {
+      public AlternativeTestTemplateExceptPostBuilder<S, R> is(Function<ContextView, ?> value) {
         if (modifiers.containsKey(variable)) {
           throw new TestBuilderException("The modifier '" + variable + "' is already defined");
         }
@@ -336,6 +339,31 @@ public final class TestBuilder {
       @Override
       public <M extends Extension<S, R>> M as(ExtensionFactory<S, R, M> factory) {
         return factory.getExtension(this, variable);
+      }
+    }
+
+    private final class InnerExceptPostBuilder implements AlternativeTestTemplateExceptPostBuilder<S, R> {
+
+
+      @Override
+      public AlternativeTestTemplateExceptPostBuilder<S, R> or(Function<ContextView, ?> value) {
+        return null;
+      }
+
+      @Override
+      public AlternativeTestTemplateExceptBuilder<S, R> except(String variable) {
+
+        // add the modifier or the parameter
+
+        return InnerAlternativeTestValidatorBuilder.this.except(variable);
+      }
+
+      @Override
+      public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
+
+        // add the modifier or the parameter
+
+        return InnerAlternativeTestValidatorBuilder.this.then(validator);
       }
     }
   }
