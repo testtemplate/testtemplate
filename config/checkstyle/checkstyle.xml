@@ -104,6 +104,8 @@
 
     <module name="OneTopLevelClass"/>
 
+    <module name="SealedShouldHavePermitsList"/>
+
     <module name="VisibilityModifier">
       <property name="protectedAllowed" value="true"/>
     </module>
