@@ -6,14 +6,14 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PersonNameUtilsTest {
 
   @TestFactory
-  List<DynamicNode> formatName() {
+  Stream<DynamicNode> formatName() {
     return TestTemplate
         .defaultTest("should be formatted beginning with last name followed with first name")
         .given("first-name").is("Alice")

@@ -13,7 +13,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import static io.github.testtemplate.TestTemplate.json;
 import static io.github.testtemplate.TestTemplate.mock;
@@ -29,7 +29,7 @@ class BookAdminControllerTest {
   private WebTestClient client;
 
   @TestFactory
-  List<DynamicNode> create() {
+  Stream<DynamicNode> create() {
     return TestTemplate
         .defaultTest("Should create book")
         .given("service").as(mock()).use(service)

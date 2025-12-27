@@ -16,7 +16,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
+import java.util.stream.Stream;
 
 import static io.github.testtemplate.TestTemplate.mock;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,7 +52,7 @@ class BookSearchControllerTest {
   private WebTestClient client;
 
   @TestFactory
-  List<DynamicNode> search() {
+  Stream<DynamicNode> search() {
     return TestTemplate
         .defaultTest("should return a list of wanted books")
         .given("service").as(mock()).use(bookService)
@@ -92,7 +92,7 @@ class BookSearchControllerTest {
   }
 
   @TestFactory
-  List<DynamicNode> read() {
+  Stream<DynamicNode> read() {
     return TestTemplate
         .defaultTest("should return a book")
         .given("service").as(mock()).use(bookService)
