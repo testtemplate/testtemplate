@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -279,7 +281,7 @@ class TestBuilderTest {
     List<TestResult> results = new ArrayList<>();
     for (TestSuiteFactory.Test test : tests) {
       try {
-        test.execute();
+        ((TestSuiteFactory.TestItem) test).execute();
         results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
       } catch (TestAbortedException e) {
         results.add(new TestResult(test.getName(), TestResultType.SKIPPED));
@@ -301,8 +303,8 @@ class TestBuilderTest {
   private static final class SimpleTestSuiteFactory implements TestSuiteFactory<List<TestSuiteFactory.Test>> {
 
     @Override
-    public List<Test> getSuite(List<? extends Test> tests) {
-      return new ArrayList<>(tests);
+    public List<Test> getSuite(Stream<? extends Test> tests) {
+      return tests.collect(Collectors.toUnmodifiableList());
     }
   }
 

@@ -17,7 +17,7 @@ import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.TestTemplateBuilder;
 import io.github.testtemplate.TestTemplatePreBuilder;
 import io.github.testtemplate.core.TestDefinition;
-import io.github.testtemplate.core.TestInstance;
+import io.github.testtemplate.core.TestItemInstance;
 import io.github.testtemplate.core.TestModifier;
 import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static io.github.testtemplate.TestType.ALTERNATIVE;
 import static io.github.testtemplate.TestType.DEFAULT;
@@ -103,7 +102,7 @@ public final class TestBuilder {
     public S suite() {
       var listeners = List.of(new DisabledTestListener(), new LoggerListener(), new PreloadVariablesListener());
       var runner = new TestRunner(listeners);
-      var instances = tests.stream().map(t -> new TestInstance<>(t, runner)).collect(Collectors.toList());
+      var instances = tests.stream().map(t -> new TestItemInstance<>(t, runner));
       return factory.getSuite(instances);
     }
   }
@@ -223,11 +222,12 @@ public final class TestBuilder {
     @Override
     public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
       var builder = new InnerTestTemplateBuilder<>(factory, template, variables, globalAttributes);
-      builder.tests.add(new TestDefinition<R>(
+      builder.tests.add(new TestDefinition<>(
           name,
           DEFAULT,
           template,
           variables.values(),
+          emptyList(),
           emptyList(),
           validator,
           attributes));
@@ -301,6 +301,7 @@ public final class TestBuilder {
           builder.template,
           builder.variables.values(),
           modifiers.values(),
+          parameters.values(),
           validator,
           attributes));
       return builder;

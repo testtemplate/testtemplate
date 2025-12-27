@@ -1,10 +1,12 @@
 package io.github.testtemplate.core.runner;
 
 import io.github.testtemplate.TestListener;
+import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.core.TestDefinition;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 public final class TestRunner {
 
@@ -14,7 +16,39 @@ public final class TestRunner {
     this.listeners.addAll(listeners);
   }
 
-  public <R> void run(TestDefinition<R> test) {
+  public <R> TestSuiteFactory.Test toInstance(TestDefinition<R> test) {
+
+    if (test.isParameterized()) {
+
+      return new TestSuiteFactory.TestGroup() {
+        @Override
+        public String getName() {
+          return test.getName();
+        }
+
+        @Override
+        public Stream<? extends TestSuiteFactory.Test> getTests() {
+          return test.deparameterize().map(t -> toInstance(t));
+        }
+      };
+
+    } else {
+
+      return new TestSuiteFactory.TestItem() {
+        @Override
+        public String getName() {
+          return test.getName();
+        }
+
+        @Override
+        public void execute() throws Throwable {
+          run(test);
+        }
+      };
+    }
+  }
+
+  private <R> void run(TestDefinition<R> test) {
     var variableResolver = new RunnerVariableResolver(test.getVariables(), test.getModifiers());
 
     var testContext = new RunnerTest(
