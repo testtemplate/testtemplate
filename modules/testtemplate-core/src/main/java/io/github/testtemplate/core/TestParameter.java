@@ -24,7 +24,11 @@ public final class TestParameter {
     this(name, group, valueSuppliers, emptyMap());
   }
 
-  public TestParameter(String name, String group, List<Function<ContextView, ?>> valueSuppliers, Map<String, Object> metadata) {
+  public TestParameter(
+      String name,
+      String group,
+      List<Function<ContextView, ?>> valueSuppliers,
+      Map<String, Object> metadata) {
     this.name = name;
     this.group = group;
     this.valueSuppliers = valueSuppliers;
@@ -39,11 +43,15 @@ public final class TestParameter {
     return group;
   }
 
-  public List<Function<ContextView, ?>> getValueSuppliers() {
-    return valueSuppliers;
+  public int getSize() {
+    return valueSuppliers.size();
   }
 
   public Map<String, Object> getMetadata() {
     return unmodifiableMap(metadata);
+  }
+
+  public TestModifier deparameterize(int index) {
+    return new TestModifier(name, valueSuppliers.get(index), metadata);
   }
 }

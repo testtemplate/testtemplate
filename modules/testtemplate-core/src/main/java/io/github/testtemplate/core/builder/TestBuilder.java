@@ -19,6 +19,7 @@ import io.github.testtemplate.TestTemplatePreBuilder;
 import io.github.testtemplate.core.TestDefinition;
 import io.github.testtemplate.core.TestInstance;
 import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
 import io.github.testtemplate.core.listener.DisabledTestListener;
 import io.github.testtemplate.core.listener.LoggerListener;
@@ -274,7 +275,7 @@ public final class TestBuilder {
 
     private final Map<String, TestModifier> modifiers = new LinkedHashMap<>();
 
-    private final Map<String, Object> parameters = new LinkedHashMap<>();
+    private final Map<String, TestParameter> parameters = new LinkedHashMap<>();
 
     private final Map<String, Object> attributes;
 
@@ -328,12 +329,11 @@ public final class TestBuilder {
 
       @Override
       public AlternativeTestTemplateExceptPostBuilder<S, R> is(Function<ContextView, ?> value) {
-        if (modifiers.containsKey(variable)) {
+        if (modifiers.containsKey(variable) || parameters.containsKey(variable)) {
           throw new TestBuilderException("The modifier '" + variable + "' is already defined");
         }
 
-        modifiers.put(variable, new TestModifier(variable, value, metadata));
-        return InnerAlternativeTestValidatorBuilder.this;
+        return new InnerExceptPostBuilder(variable, value, metadata);
       }
 
       @Override
@@ -344,26 +344,42 @@ public final class TestBuilder {
 
     private final class InnerExceptPostBuilder implements AlternativeTestTemplateExceptPostBuilder<S, R> {
 
+      private final String variable;
+
+      private final List<Function<ContextView, ?>> values = new ArrayList<>();
+
+      private final Map<String, Object> metadata;
+
+      private InnerExceptPostBuilder(String variable, Function<ContextView, ?> value, Map<String, Object> metadata) {
+        this.variable = variable;
+        this.values.add(value);
+        this.metadata = metadata;
+      }
 
       @Override
       public AlternativeTestTemplateExceptPostBuilder<S, R> or(Function<ContextView, ?> value) {
-        return null;
+        values.add(value);
+        return this;
       }
 
       @Override
       public AlternativeTestTemplateExceptBuilder<S, R> except(String variable) {
-
-        // add the modifier or the parameter
-
+        addModifierOrParameter();
         return InnerAlternativeTestValidatorBuilder.this.except(variable);
       }
 
       @Override
       public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
-
-        // add the modifier or the parameter
-
+        addModifierOrParameter();
         return InnerAlternativeTestValidatorBuilder.this.then(validator);
+      }
+
+      private void addModifierOrParameter() {
+        if (values.size() == 1) {
+          modifiers.put(variable, new TestModifier(variable, values.getFirst(), metadata));
+        } else {
+          parameters.put(variable, new TestParameter(variable, variable, values, metadata));
+        }
       }
     }
   }
