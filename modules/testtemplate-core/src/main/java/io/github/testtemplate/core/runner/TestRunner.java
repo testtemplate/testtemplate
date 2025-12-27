@@ -17,9 +17,7 @@ public final class TestRunner {
   }
 
   public <R> TestSuiteFactory.Test toInstance(TestDefinition<R> test) {
-
     if (test.isParameterized()) {
-
       return new TestSuiteFactory.TestGroup() {
         @Override
         public String getName() {
@@ -33,7 +31,6 @@ public final class TestRunner {
       };
 
     } else {
-
       return new TestSuiteFactory.TestItem() {
         @Override
         public String getName() {
@@ -41,7 +38,7 @@ public final class TestRunner {
         }
 
         @Override
-        public void execute() throws Throwable {
+        public void execute() {
           run(test);
         }
       };

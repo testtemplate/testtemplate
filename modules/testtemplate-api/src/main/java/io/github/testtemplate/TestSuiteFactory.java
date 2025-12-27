@@ -14,7 +14,7 @@ public interface TestSuiteFactory<S> {
 
   interface TestItem extends Test {
 
-    void execute() throws Throwable;
+    void execute();
 
   }
 

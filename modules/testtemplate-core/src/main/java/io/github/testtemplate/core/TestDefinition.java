@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
@@ -76,27 +77,31 @@ public final class TestDefinition<R> {
   }
 
   public Stream<TestDefinition<R>> deparameterize() {
-
     TestParameter firstParameter = parameters.getFirst();
-    for (int i = 0; i < firstParameter.getSize(); i++) {
-      List<TestModifier> newModifiers = new ArrayList<>(modifiers);
-      List<TestParameter> newParameters = new ArrayList<>(parameters);
+    return IntStream
+        .range(0, parameters.size())
+        .mapToObj(index -> {
+          List<TestModifier> newModifiers = new ArrayList<>(modifiers);
+          List<TestParameter> newParameters = new ArrayList<>(parameters);
 
-      for (var parameter : newParameters) {
-        if (parameter.getGroup().equals(firstParameter.getGroup())) {
-          newModifiers.add(parameter.deparameterize(i));
-        }
-      }
+          for (var parameter : newParameters) {
+            if (parameter.getGroup().equals(firstParameter.getGroup())) {
+              newModifiers.add(parameter.deparameterize(index));
+            }
+          }
 
-            
+          newParameters.removeIf(p -> p.getGroup().equals(firstParameter.getGroup()));
 
-    }
-      
-
-
-
-
-    return null;
+          return new TestDefinition<>(
+              name,
+              type,
+              template,
+              variables,
+              newModifiers,
+              newParameters,
+              validator,
+              attributes);
+        });
   }
 
   /*
