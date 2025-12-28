@@ -11,6 +11,9 @@ import java.util.stream.Stream;
 
 public final class TestTemplate {
 
+  public static final String EMPTY_STRING = "";
+  public static final String BLANK_STRING = "   ";
+
   private static JsonExtension<?, ?> jsonExtension;
   private static MockExtension<?, ?> mockExtension;
 

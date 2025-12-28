@@ -79,7 +79,7 @@ public final class TestDefinition<R> {
   public Stream<TestDefinition<R>> deparameterize() {
     TestParameter firstParameter = parameters.getFirst();
     return IntStream
-        .range(0, parameters.size())
+        .range(0, firstParameter.getSize())
         .mapToObj(index -> {
           List<TestModifier> newModifiers = new ArrayList<>(modifiers);
           List<TestParameter> newParameters = new ArrayList<>(parameters);
@@ -93,7 +93,7 @@ public final class TestDefinition<R> {
           newParameters.removeIf(p -> p.getGroup().equals(firstParameter.getGroup()));
 
           return new TestDefinition<>(
-              name,
+              firstParameter.getName() + " is ${" + firstParameter.getName() + "}",
               type,
               template,
               variables,
