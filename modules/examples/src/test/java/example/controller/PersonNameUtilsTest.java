@@ -23,7 +23,7 @@ class PersonNameUtilsTest {
         .when(ctx -> PersonNameUtils.formatName(ctx.get("first-name"), ctx.get("last-name")))
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown, Alice"))
 
-        .test("should be formatted with last name when...")
+        .test("should be formatted with last name when ")
         .sameAsDefault()
         .except("first-name").isNull().or(EMPTY_STRING).or(BLANK_STRING)
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
