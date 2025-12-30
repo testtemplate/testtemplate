@@ -1,5 +1,7 @@
 package io.github.testtemplate.core.runner;
 
+import io.github.testtemplate.core.logger.BetterVariableLogger;
+
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +19,7 @@ final class TestNameSubstitutor {
     var matcher = PLACEHOLDER_PATTERN.matcher(name);
     while (matcher.find()) {
       var token = matcher.group("token");
-      var value = variableResolver.getVariable(token).getValue();
+      var value = BetterVariableLogger.toValueString(variableResolver.getVariable(token));
       matcher.appendReplacement(sb, Matcher.quoteReplacement(Objects.toString(value)));
     }
     matcher.appendTail(sb);

@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
 import static io.github.testtemplate.TestType.DEFAULT;
+import static io.github.testtemplate.VariableType.ORIGINAL;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -288,7 +288,12 @@ public class TestRunnerTest {
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito
           .verify(listener)
-          .variable(context.capture(), Mockito.eq("greeting"), Mockito.eq(ORIGINAL), Mockito.eq("welcome"));
+          .variable(
+              context.capture(),
+              Mockito.eq("greeting"),
+              Mockito.eq(ORIGINAL),
+              Mockito.eq("welcome"),
+              Mockito.anyMap());
     }
   }
 }

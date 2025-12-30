@@ -1,7 +1,7 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.TestListener.Variable;
-import io.github.testtemplate.TestListener.VariableType;
+import io.github.testtemplate.Variable;
+import io.github.testtemplate.VariableType;
 
 import java.util.HashMap;
 import java.util.Map;

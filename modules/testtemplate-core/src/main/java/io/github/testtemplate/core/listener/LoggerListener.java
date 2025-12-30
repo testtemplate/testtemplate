@@ -2,12 +2,16 @@ package io.github.testtemplate.core.listener;
 
 import io.github.testtemplate.TestListener;
 import io.github.testtemplate.TestType;
+import io.github.testtemplate.Variable;
+import io.github.testtemplate.VariableType;
+import io.github.testtemplate.core.logger.BetterVariableLogger;
 
 import org.slf4j.Logger;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -43,9 +47,9 @@ public class LoggerListener implements TestListener {
   }
 
   @Override
-  public void variable(Test test, String name, VariableType type, Object value) {
+  public void variable(Test test, String name, VariableType type, Object value, Map<String, Object> metadata) {
     var context = (LogContext) test.getAttribute(KEY_LOG_CONTEXT);
-    context.addVariable(name, type, value);
+    context.addVariable(name, type, value, metadata);
   }
 
   static String buildReport(LogContext context) {
@@ -56,14 +60,14 @@ public class LoggerListener implements TestListener {
     sb.append("\n");
 
     var variables = context.getVariables();
-    if (variables.size() > 0) {
+    if (!variables.isEmpty()) {
       int length = getLongerVariableLength(variables);
 
       sb.append("Variables:\n");
       variables.forEach(v -> {
         sb.append("  ").append(String.format("%-" + length + "s", v.getName()));
         sb.append(v.getType() == VariableType.MODIFIED ? " (M)" : "    ");
-        sb.append(" = ").append(v.getValue());
+        sb.append(" = ").append(BetterVariableLogger.toValueString(v).indent(length + 9).trim());
         sb.append("\n");
       });
       sb.append("\n");
@@ -73,7 +77,7 @@ public class LoggerListener implements TestListener {
       sb.append("Exception Thrown:\n");
       var writer = new StringWriter();
       context.getException().printStackTrace(new PrintWriter(writer));
-      sb.append("  ").append(writer);
+      sb.append(writer.toString().replace("\t", "    ").indent(2));
 
     } else {
       sb.append("Result:\n");
@@ -138,32 +142,47 @@ public class LoggerListener implements TestListener {
       return variables.values();
     }
 
-    public void addVariable(String name, VariableType type, Object value) {
-      variables.put(name, new LogContextVariable(name, type, value));
+    public void addVariable(String name, VariableType type, Object value, Map<String, Object> metadata) {
+      variables.put(name, new LogContextVariable(name, type, value, metadata));
     }
   }
 
-  private static final class LogContextVariable {
+  public static final class LogContextVariable implements Variable {
     private final String name;
     private final VariableType type;
     private final Object value;
+    private final Map<String, Object> metadata = new HashMap<>();
 
-    private LogContextVariable(String name, VariableType type, Object value) {
+    private LogContextVariable(String name, VariableType type, Object value, Map<String, Object> metadata) {
       this.name = name;
       this.type = type;
       this.value = value;
+      this.metadata.putAll(metadata);
     }
 
+    @Override
     public String getName() {
       return name;
     }
 
+    @Override
     public VariableType getType() {
       return type;
     }
 
+    @Override
     public Object getValue() {
       return value;
+    }
+
+    @Override
+    public Object getMetadata(String key) {
+      return metadata.get(key);
+    }
+
+    @Override
+    public Object getMetadata(String key, Object defaultValue) {
+      return metadata.getOrDefault(key, defaultValue);
     }
   }
 }

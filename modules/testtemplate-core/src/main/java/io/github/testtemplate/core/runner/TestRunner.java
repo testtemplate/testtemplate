@@ -36,8 +36,8 @@ public final class TestRunner {
       this.variableResolver = new RunnerVariableResolver(test.getVariables(), test.getModifiers());
       this.resolvedName = resolveName(test.getName(), variableResolver);
       this.testContext = new RunnerTest(resolvedName, test.getType(), variableResolver, test.getAttributes());
-      variableResolver.registerListener((name, type, value) ->
-          listeners.forEach(listener -> listener.variable(testContext, name, type, value)));
+      variableResolver.registerListener((name, type, value, metadata) ->
+          listeners.forEach(listener -> listener.variable(testContext, name, type, value, metadata)));
     }
 
     @Override

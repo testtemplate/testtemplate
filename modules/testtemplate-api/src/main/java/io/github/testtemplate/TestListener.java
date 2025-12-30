@@ -1,5 +1,7 @@
 package io.github.testtemplate;
 
+import java.util.Map;
+
 public interface TestListener {
 
   default void before(Test test) {}
@@ -10,7 +12,7 @@ public interface TestListener {
 
   default void exception(Test test, Throwable exception) {}
 
-  default void variable(Test test, String name, VariableType type, Object value) {}
+  default void variable(Test test, String name, VariableType type, Object value, Map<String, Object> metadata) {}
 
   interface Test {
 
@@ -29,23 +31,5 @@ public interface TestListener {
     void setAttribute(String key, Object value);
 
     void clearAttribute(String key);
-  }
-
-  enum VariableType {
-    ORIGINAL,
-    MODIFIED
-  }
-
-  interface Variable {
-
-    String getName();
-
-    VariableType getType();
-
-    Object getValue();
-
-    Object getMetadata(String key);
-
-    Object getMetadata(String key, Object defaultValue);
   }
 }
