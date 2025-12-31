@@ -19,7 +19,7 @@ public class JUnitTestSuiteFactory implements TestSuiteFactory<Stream<DynamicNod
     return switch (test) {
       case TestItem item -> DynamicTest.dynamicTest(item.getName(), item::execute);
       case TestGroup group -> DynamicContainer.dynamicContainer(group.getName(), getSuite(group.getTests()));
-      default -> throw new IllegalArgumentException("Unknown test: " + test);
+      default -> throw new IllegalArgumentException("Unknown test: " + test.getClass().getName());
     };
   }
 }
