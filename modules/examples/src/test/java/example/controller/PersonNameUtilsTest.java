@@ -23,12 +23,12 @@ class PersonNameUtilsTest {
         .when(ctx -> PersonNameUtils.formatName(ctx.get("first-name"), ctx.get("last-name")))
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown, Alice"))
 
-        .test("should be formatted with last name when ")
+        .test("should be formatted with last name when is null, empty or blank")
         .sameAsDefault()
         .except("first-name").isNull().or(EMPTY_STRING).or(BLANK_STRING)
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
 
-        .test("should throw an exception when last is null")
+        .test("should throw an exception when last is null, empty or blank")
         .sameAsDefault()
         .except("last-name").isNull().or(EMPTY_STRING).or(BLANK_STRING)
         .then(ctx -> Assertions

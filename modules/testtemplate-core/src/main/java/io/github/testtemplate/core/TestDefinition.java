@@ -104,35 +104,6 @@ public final class TestDefinition<R> {
         });
   }
 
-  /*
-
-    public List<TestDefinition<R>> deparameterize() {
-    var newTests = new ArrayList<TestDefinition<R>>();
-
-    var firstParameter = parameters.getFirst();
-    for (int i = 0; i < firstParameter.getValueSuppliers().size(); i++) {
-      var newTest = this.copy();
-
-      for (var parameter : parameters) {
-        if (parameter.getGroup().equals(firstParameter.getGroup())) {
-          newTest.withModifier(parameter.deparameterize(i));
-        }
-      }
-
-      newTest.withoutParameterGroup(firstParameter.getGroup());
-
-      newTest.withName("when " + firstParameter.getName() + " is ${" + firstParameter.getName() + "}");
-
-      newTests.add(newTest);
-    }
-
-    return newTests;
-  }
-
-
-   */
-
-
   public ContextualValidator<R> getValidator() {
     return validator;
   }
