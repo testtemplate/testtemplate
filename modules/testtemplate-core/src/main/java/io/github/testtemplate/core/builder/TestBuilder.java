@@ -2,6 +2,7 @@ package io.github.testtemplate.core.builder;
 
 import io.github.testtemplate.AlternativeTestTemplateBuilder;
 import io.github.testtemplate.AlternativeTestTemplateExceptBuilder;
+import io.github.testtemplate.AlternativeTestTemplateExceptPostBuilder;
 import io.github.testtemplate.AlternativeTestTemplatePreBuilder;
 import io.github.testtemplate.AlternativeTestValidatorBuilder;
 import io.github.testtemplate.Context;
@@ -16,8 +17,8 @@ import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.TestTemplateBuilder;
 import io.github.testtemplate.TestTemplatePreBuilder;
 import io.github.testtemplate.core.TestDefinition;
-import io.github.testtemplate.core.TestInstance;
 import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
 import io.github.testtemplate.core.listener.DisabledTestListener;
 import io.github.testtemplate.core.listener.LoggerListener;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static io.github.testtemplate.TestType.ALTERNATIVE;
 import static io.github.testtemplate.TestType.DEFAULT;
@@ -101,7 +101,7 @@ public final class TestBuilder {
     public S suite() {
       var listeners = List.of(new DisabledTestListener(), new LoggerListener(), new PreloadVariablesListener());
       var runner = new TestRunner(listeners);
-      var instances = tests.stream().map(t -> new TestInstance<>(t, runner)).collect(Collectors.toList());
+      var instances = tests.stream().map(runner::toInstance);
       return factory.getSuite(instances);
     }
   }
@@ -221,11 +221,12 @@ public final class TestBuilder {
     @Override
     public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
       var builder = new InnerTestTemplateBuilder<>(factory, template, variables, globalAttributes);
-      builder.tests.add(new TestDefinition<R>(
+      builder.tests.add(new TestDefinition<>(
           name,
           DEFAULT,
           template,
           variables.values(),
+          emptyList(),
           emptyList(),
           validator,
           attributes));
@@ -273,6 +274,8 @@ public final class TestBuilder {
 
     private final Map<String, TestModifier> modifiers = new LinkedHashMap<>();
 
+    private final Map<String, TestParameter> parameters = new LinkedHashMap<>();
+
     private final Map<String, Object> attributes;
 
     private InnerAlternativeTestValidatorBuilder(
@@ -297,6 +300,7 @@ public final class TestBuilder {
           builder.template,
           builder.variables.values(),
           modifiers.values(),
+          parameters.values(),
           validator,
           attributes));
       return builder;
@@ -324,18 +328,58 @@ public final class TestBuilder {
       }
 
       @Override
-      public AlternativeTestValidatorBuilder<S, R> is(Function<ContextView, ?> value) {
-        if (modifiers.containsKey(variable)) {
+      public AlternativeTestTemplateExceptPostBuilder<S, R> is(Function<ContextView, ?> value) {
+        if (modifiers.containsKey(variable) || parameters.containsKey(variable)) {
           throw new TestBuilderException("The modifier '" + variable + "' is already defined");
         }
 
-        modifiers.put(variable, new TestModifier(variable, value, metadata));
-        return InnerAlternativeTestValidatorBuilder.this;
+        return new InnerExceptPostBuilder(variable, value, metadata);
       }
 
       @Override
       public <M extends Extension<S, R>> M as(ExtensionFactory<S, R, M> factory) {
         return factory.getExtension(this, variable);
+      }
+    }
+
+    private final class InnerExceptPostBuilder implements AlternativeTestTemplateExceptPostBuilder<S, R> {
+
+      private final String variable;
+
+      private final List<Function<ContextView, ?>> values = new ArrayList<>();
+
+      private final Map<String, Object> metadata;
+
+      private InnerExceptPostBuilder(String variable, Function<ContextView, ?> value, Map<String, Object> metadata) {
+        this.variable = variable;
+        this.values.add(value);
+        this.metadata = metadata;
+      }
+
+      @Override
+      public AlternativeTestTemplateExceptPostBuilder<S, R> or(Function<ContextView, ?> value) {
+        values.add(value);
+        return this;
+      }
+
+      @Override
+      public AlternativeTestTemplateExceptBuilder<S, R> except(String variable) {
+        addModifierOrParameter();
+        return InnerAlternativeTestValidatorBuilder.this.except(variable);
+      }
+
+      @Override
+      public TestTemplateBuilder<S, R> then(ContextualValidator<R> validator) {
+        addModifierOrParameter();
+        return InnerAlternativeTestValidatorBuilder.this.then(validator);
+      }
+
+      private void addModifierOrParameter() {
+        if (values.size() == 1) {
+          modifiers.put(variable, new TestModifier(variable, values.getFirst(), metadata));
+        } else {
+          parameters.put(variable, new TestParameter(variable, variable, values, metadata));
+        }
       }
     }
   }

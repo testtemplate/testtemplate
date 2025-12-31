@@ -3,8 +3,10 @@ package io.github.testtemplate.core.runner;
 import io.github.testtemplate.ContextualTemplate;
 import io.github.testtemplate.ContextualValidator;
 import io.github.testtemplate.TestListener;
+import io.github.testtemplate.TestSuiteFactory;
 import io.github.testtemplate.core.TestDefinition;
 import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestVariable;
 
 import org.assertj.core.api.Assertions;
@@ -19,11 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
 import static io.github.testtemplate.TestType.DEFAULT;
+import static io.github.testtemplate.VariableType.ORIGINAL;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class TestRunnerTest {
@@ -32,6 +33,7 @@ public class TestRunnerTest {
   private static final ContextualTemplate<Object> NO_OP_TEMPLATE = c -> null;
   private static final Set<TestVariable> EMPTY_VARIABLE_SET = Set.of();
   private static final Set<TestModifier> EMPTY_MODIFIER_SET = Set.of();
+  private static final Set<TestParameter> EMPTY_PARAMETER_SET = Set.of();
   private static final ContextualValidator<Object> NO_OP_VALIDATOR = c -> {};
   private static final Map<String, Object> EMPTY_ATTRIBUTE_MAP = Map.of();
 
@@ -48,10 +50,11 @@ public class TestRunnerTest {
           c -> "This is the result of the test",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.result()).isEqualTo("This is the result of the test"),
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
     }
 
     @Test
@@ -62,11 +65,12 @@ public class TestRunnerTest {
           c -> "This is the result of the test",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.result()).isEqualTo("But we expect something else"),
           EMPTY_ATTRIBUTE_MAP);
 
       Assertions
-          .assertThatThrownBy(() -> runner.run(test))
+          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
           .isInstanceOf(AssertionFailedError.class)
           .hasMessageContaining("But we expect something else");
     }
@@ -79,10 +83,11 @@ public class TestRunnerTest {
           c -> { throw new Exception("This is expected"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("This is expected"),
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
     }
 
     @Test
@@ -93,11 +98,12 @@ public class TestRunnerTest {
           c -> { throw new Exception("This is an exception"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("But expect another one"),
           EMPTY_ATTRIBUTE_MAP);
 
       Assertions
-          .assertThatThrownBy(() -> runner.run(test))
+          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
           .isInstanceOf(AssertionFailedError.class)
           .hasMessageContaining("But expect another one");
     }
@@ -110,11 +116,12 @@ public class TestRunnerTest {
           c -> { throw new TestRunnerException("This is for internal purpose"); },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> { throw new RuntimeException("Not expected"); },
           EMPTY_ATTRIBUTE_MAP);
 
       Assertions
-          .assertThatThrownBy(() -> runner.run(test))
+          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
           .isInstanceOf(TestRunnerException.class)
           .hasMessage("This is for internal purpose");
     }
@@ -135,10 +142,11 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito.verify(listener).before(context.capture());
@@ -156,10 +164,11 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito.verify(listener).after(context.capture());
@@ -177,10 +186,13 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           c -> fail(),
           EMPTY_ATTRIBUTE_MAP);
 
-      assertThatThrownBy(() -> runner.run(test)).isInstanceOf(AssertionFailedError.class);
+      Assertions
+          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
+          .isInstanceOf(AssertionFailedError.class);
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito.verify(listener).after(context.capture());
@@ -200,11 +212,12 @@ public class TestRunnerTest {
           NO_OP_TEMPLATE,
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
       Assertions
-          .assertThatThrownBy(() -> runner.run(test))
+          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
           .isInstanceOf(TestAbortedException.class);
 
       Mockito.verify(listener, Mockito.never()).after(Mockito.any());
@@ -218,10 +231,11 @@ public class TestRunnerTest {
           c -> "welcome",
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito.verify(listener).result(context.capture(), Mockito.eq("welcome"));
@@ -242,10 +256,11 @@ public class TestRunnerTest {
           c -> { throw exception; },
           EMPTY_VARIABLE_SET,
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito.verify(listener, Mockito.never()).result(Mockito.any(), Mockito.any());
@@ -264,15 +279,21 @@ public class TestRunnerTest {
           c -> c.get("greeting"),
           Set.of(new TestVariable("greeting", c -> "welcome")),
           EMPTY_MODIFIER_SET,
+          EMPTY_PARAMETER_SET,
           NO_OP_VALIDATOR,
           EMPTY_ATTRIBUTE_MAP);
 
-      runner.run(test);
+      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
 
       var context = ArgumentCaptor.forClass(TestListener.Test.class);
       Mockito
           .verify(listener)
-          .variable(context.capture(), Mockito.eq("greeting"), Mockito.eq(ORIGINAL), Mockito.eq("welcome"));
+          .variable(
+              context.capture(),
+              Mockito.eq("greeting"),
+              Mockito.eq(ORIGINAL),
+              Mockito.eq("welcome"),
+              Mockito.anyMap());
     }
   }
 }

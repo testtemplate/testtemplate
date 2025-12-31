@@ -1,6 +1,8 @@
 package io.github.testtemplate.core.listener;
 
 import io.github.testtemplate.TestListener;
+import io.github.testtemplate.Variable;
+import io.github.testtemplate.VariableType;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,7 +39,7 @@ class PreloadVariablesListenerTest {
     Mockito.verify(varC, Mockito.never()).getValue();
   }
 
-  private static class TestVariable implements TestListener.Variable {
+  private static class TestVariable implements Variable {
 
     private final Map<String, Object> metadata = new HashMap<>();
 
@@ -54,7 +56,7 @@ class PreloadVariablesListenerTest {
     }
 
     @Override
-    public TestListener.VariableType getType() {
+    public VariableType getType() {
       throw new UnsupportedOperationException();
     }
 

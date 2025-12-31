@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
@@ -25,6 +27,8 @@ public final class TestDefinition<R> {
 
   private final List<TestModifier> modifiers = new ArrayList<>();
 
+  private final List<TestParameter> parameters = new ArrayList<>();
+
   private final ContextualValidator<R> validator;
 
   private final Map<String, Object> attributes = new HashMap<>();
@@ -35,6 +39,7 @@ public final class TestDefinition<R> {
       ContextualTemplate<R> template,
       Collection<TestVariable> variables,
       Collection<TestModifier> modifiers,
+      Collection<TestParameter> parameters,
       ContextualValidator<R> validator,
       Map<String, Object> attributes) {
     this.name = name;
@@ -42,6 +47,7 @@ public final class TestDefinition<R> {
     this.template = template;
     this.variables.addAll(variables);
     this.modifiers.addAll(modifiers);
+    this.parameters.addAll(parameters);
     this.validator = validator;
     this.attributes.putAll(attributes);
   }
@@ -64,6 +70,38 @@ public final class TestDefinition<R> {
 
   public List<TestModifier> getModifiers() {
     return unmodifiableList(modifiers);
+  }
+
+  public boolean isParameterized() {
+    return !parameters.isEmpty();
+  }
+
+  public Stream<TestDefinition<R>> deparameterize() {
+    TestParameter firstParameter = parameters.getFirst();
+    return IntStream
+        .range(0, firstParameter.getSize())
+        .mapToObj(index -> {
+          List<TestModifier> newModifiers = new ArrayList<>(modifiers);
+          List<TestParameter> newParameters = new ArrayList<>(parameters);
+
+          for (var parameter : newParameters) {
+            if (parameter.getGroup().equals(firstParameter.getGroup())) {
+              newModifiers.add(parameter.deparameterize(index));
+            }
+          }
+
+          newParameters.removeIf(p -> p.getGroup().equals(firstParameter.getGroup()));
+
+          return new TestDefinition<>(
+              firstParameter.getName() + " is ${" + firstParameter.getName() + "}",
+              type,
+              template,
+              variables,
+              newModifiers,
+              newParameters,
+              validator,
+              attributes);
+        });
   }
 
   public ContextualValidator<R> getValidator() {

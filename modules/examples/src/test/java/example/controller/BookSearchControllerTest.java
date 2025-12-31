@@ -16,10 +16,11 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.List;
+import java.util.stream.Stream;
 
 import static io.github.testtemplate.TestTemplate.mock;
 import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.json.JsonCompareMode.STRICT;
 
 @WebFluxTest(controllers = BookSearchController.class)
 class BookSearchControllerTest {
@@ -52,7 +53,7 @@ class BookSearchControllerTest {
   private WebTestClient client;
 
   @TestFactory
-  List<DynamicNode> search() {
+  Stream<DynamicNode> search() {
     return TestTemplate
         .defaultTest("should return a list of wanted books")
         .given("service").as(mock()).use(bookService)
@@ -65,10 +66,12 @@ class BookSearchControllerTest {
             .exchange())
         .then(ctx -> ctx.result()
             .expectStatus().isOk()
-            .expectBody().json("["
-                + "{\"id\": \"1000\", \"title\": \"Greatest Book Ever\"},"
-                + "{\"id\": \"2000\", \"title\": \"Great Antonio\"}"
-                + "]"))
+            .expectBody().json("""
+                [
+                  {"id": "1000", "title": "Greatest Book Ever"},
+                  {"id": "2000", "title": "Great Antonio"}
+                ]
+                """))
 
         .test("should return no books when no books match the request")
         .sameAsDefault()
@@ -82,17 +85,19 @@ class BookSearchControllerTest {
         .except("request-query").isNull()
         .then(ctx -> ctx.result()
             .expectStatus().isOk()
-            .expectBody().json("["
-                + "{\"id\": \"1000\", \"title\": \"Greatest Book Ever\"},"
-                + "{\"id\": \"2000\", \"title\": \"Great Antonio\"},"
-                + "{\"id\": \"3000\", \"title\": \"House of Future\"}"
-                + "]"))
+            .expectBody().json("""
+                [
+                  {"id": "1000", "title": "Greatest Book Ever"},
+                  {"id": "2000", "title": "Great Antonio"},
+                  {"id": "3000", "title": "House of Future"}
+                ]
+                """))
 
         .suite();
   }
 
   @TestFactory
-  List<DynamicNode> read() {
+  Stream<DynamicNode> read() {
     return TestTemplate
         .defaultTest("should return a book")
         .given("service").as(mock()).use(bookService)
@@ -101,14 +106,17 @@ class BookSearchControllerTest {
         .when(ctx -> client.get().uri("/books/{id}", ctx.given("requested-book-id").is(BOOK_1000.getId())).exchange())
         .then(ctx -> ctx.result()
             .expectStatus().isOk()
-            .expectBody().json("{"
-                + "\"id\": \"1000\","
-                + "\"title\": \"Greatest Book Ever\","
-                + "\"description\": \"...\","
-                + "\"author\": \"Brown, Alice\","
-                + "\"publisher\": \"Imaginary Inc.\","
-                + "\"publishedDate\": \"2022-04-18\","
-                + "\"pageCount\": 101}", true))
+            .expectBody().json("""
+                {
+                  "id": "1000",
+                  "title": "Greatest Book Ever",
+                  "description": "...",
+                  "author": "Brown, Alice",
+                  "publisher": "Imaginary Inc.",
+                  "publishedDate": "2022-04-18",
+                  "pageCount": 101
+                }
+                """, STRICT))
 
         .test("should return 404 not found when the book doesn't exist")
         .sameAsDefault()

@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -28,6 +30,23 @@ class TestBuilderTest {
 
   @Test
   void buildSimpleDefaultTest() {
+    var builder = TestBuilder
+        .builder(new SimpleTestSuiteFactory())
+
+        .defaultTest("simple default test")
+        .given("greeting").is("hello")
+        .when(c -> c.get("greeting"))
+        .then(c -> assertThat(c.result()).isEqualTo("hello"));
+
+    var result = execute(builder.suite());
+
+    assertThat(result)
+        .extracting("name", "type")
+        .containsExactly(tuple("simple default test", TestResultType.SUCCESS));
+  }
+
+  @Test
+  void buildSimpleAlternativeTests() {
     var builder = TestBuilder
         .builder(new SimpleTestSuiteFactory())
 
@@ -59,20 +78,33 @@ class TestBuilderTest {
   }
 
   @Test
-  void buildSimpleAlternativeTests() {
+  void buildSimpleParameterizedTests() {
     var builder = TestBuilder
         .builder(new SimpleTestSuiteFactory())
 
-        .defaultTest("simple default test")
+        .defaultTest("default")
         .given("greeting").is("hello")
         .when(c -> c.get("greeting"))
         .then(c -> assertThat(c.result()).isEqualTo("hello"));
+
+    builder
+        .test("parameterized")
+        .sameAsDefault()
+        .except("greeting")
+            .is("good morning")
+            .or("good afternoon")
+            .or("f$%^ing Monday")
+        .then(c -> assertThat(c.result()).asString().startsWith("good"));
 
     var result = execute(builder.suite());
 
     assertThat(result)
         .extracting("name", "type")
-        .containsExactly(tuple("simple default test", TestResultType.SUCCESS));
+        .containsExactly(
+            Tuple.tuple("default", TestResultType.SUCCESS),
+            Tuple.tuple("greeting is good morning", TestResultType.SUCCESS),
+            Tuple.tuple("greeting is good afternoon", TestResultType.SUCCESS),
+            Tuple.tuple("greeting is f$%^ing Monday", TestResultType.FAILURE));
   }
 
   @Test
@@ -150,6 +182,27 @@ class TestBuilderTest {
   }
 
   @Test
+  void buildShouldThrowExceptionWhenParameterIsDefinedTwice() {
+    var builder = TestBuilder
+        .builder(new SimpleTestSuiteFactory())
+
+        .defaultTest("default")
+        .given("greeting").is("hello")
+        .when(c -> c.get("greeting"))
+        .then(c -> assertThat(c.result()).isEqualTo("hello"));
+
+    Assertions
+        .assertThatThrownBy(() -> builder
+            .test("alternative 1")
+            .sameAsDefault()
+            .except("greeting").is("good morning").or("good afternoon")
+            .except("greeting").is("hello") // will throw
+            .then(c -> assertThat(c.result()).isEqualTo("hi")))
+        .isInstanceOf(TestBuilderException.class)
+        .hasMessage("The modifier 'greeting' is already defined");
+  }
+
+  @Test
   void disableDefaultTestShouldNotExecuteDefaultTest() {
     var builder = TestBuilder
         .builder(new SimpleTestSuiteFactory())
@@ -205,6 +258,13 @@ class TestBuilderTest {
         .except("greeting").is(c -> c.get("greeting") + " bob")
         .then(c -> assertThat(c.result()).isEqualTo("hello obo"));
 
+    builder
+        .test("parameterized")
+        .disabled("this one is wrong")
+        .sameAsDefault()
+        .except("greeting").is("good morning").or("good afternoon").or("f$%^ing Monday")
+        .then(c -> assertThat(c.result()).asString().startsWith("good"));
+
     var result = execute(builder.suite());
 
     assertThat(result)
@@ -212,7 +272,10 @@ class TestBuilderTest {
         .containsExactly(
             tuple("default", TestResultType.SUCCESS),
             tuple("alternative 1", TestResultType.SUCCESS),
-            tuple("alternative 2", TestResultType.SKIPPED));
+            tuple("alternative 2", TestResultType.SKIPPED),
+            tuple("greeting is good morning", TestResultType.SKIPPED),
+            tuple("greeting is good afternoon", TestResultType.SKIPPED),
+            tuple("greeting is f$%^ing Monday", TestResultType.SKIPPED));
   }
 
   @Test
@@ -238,6 +301,12 @@ class TestBuilderTest {
         .except("greeting").is(c -> c.get("greeting") + " bob")
         .then(c -> assertThat(c.result()).isEqualTo("hello obo"));
 
+    builder
+        .test("parameterized")
+        .sameAsDefault()
+        .except("greeting").is("good morning").or("good afternoon")
+        .then(c -> assertThat(c.result()).asString().startsWith("good"));
+
     var result = execute(builder.suite());
 
     assertThat(result)
@@ -245,7 +314,9 @@ class TestBuilderTest {
         .containsExactly(
             tuple("default", TestResultType.SKIPPED),
             tuple("alternative 1", TestResultType.SKIPPED),
-            tuple("alternative 2", TestResultType.SKIPPED));
+            tuple("alternative 2", TestResultType.SKIPPED),
+            tuple("greeting is good morning", TestResultType.SKIPPED),
+            tuple("greeting is good afternoon", TestResultType.SKIPPED));
   }
 
   @Test
@@ -275,12 +346,18 @@ class TestBuilderTest {
     assertThat(check.get()).isEqualTo(12);
   }
 
-  private static List<TestResult> execute(List<TestSuiteFactory.Test> tests) {
+  private static List<TestResult> execute(List<? extends TestSuiteFactory.Test> tests) {
     List<TestResult> results = new ArrayList<>();
     for (TestSuiteFactory.Test test : tests) {
       try {
-        test.execute();
-        results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
+        if (test instanceof TestSuiteFactory.TestItem) {
+          ((TestSuiteFactory.TestItem) test).execute();
+          results.add(new TestResult(test.getName(), TestResultType.SUCCESS));
+        } else if (test instanceof TestSuiteFactory.TestGroup) {
+          results.addAll(execute(((TestSuiteFactory.TestGroup) test).getTests().toList()));
+        } else {
+          results.add(new TestResult(test.getName(), TestResultType.FAILURE));
+        }
       } catch (TestAbortedException e) {
         results.add(new TestResult(test.getName(), TestResultType.SKIPPED));
       } catch (Throwable t) {
@@ -301,8 +378,8 @@ class TestBuilderTest {
   private static final class SimpleTestSuiteFactory implements TestSuiteFactory<List<TestSuiteFactory.Test>> {
 
     @Override
-    public List<Test> getSuite(List<? extends Test> tests) {
-      return new ArrayList<>(tests);
+    public List<Test> getSuite(Stream<? extends Test> tests) {
+      return tests.collect(Collectors.toUnmodifiableList());
     }
   }
 

@@ -1,16 +1,26 @@
 package io.github.testtemplate;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 public interface TestSuiteFactory<S> {
 
-  S getSuite(List<? extends Test> tests);
+  S getSuite(Stream<? extends Test> tests);
 
   interface Test {
 
     String getName();
 
-    void execute() throws Throwable;
+  }
+
+  interface TestItem extends Test {
+
+    void execute();
+
+  }
+
+  interface TestGroup extends Test {
+
+    Stream<? extends Test> getTests();
 
   }
 }

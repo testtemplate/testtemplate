@@ -4,8 +4,9 @@ import io.github.testtemplate.TestType;
 
 import org.junit.jupiter.api.Test;
 
-import static io.github.testtemplate.TestListener.VariableType.MODIFIED;
-import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
+import static io.github.testtemplate.VariableType.MODIFIED;
+import static io.github.testtemplate.VariableType.ORIGINAL;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LoggerListenerTest {
@@ -27,9 +28,9 @@ class LoggerListenerTest {
   @Test
   void reportShouldShowVariableInColumn() {
     LoggerListener.LogContext context = new LoggerListener.LogContext("test-name", TestType.DEFAULT);
-    context.addVariable("short-name", ORIGINAL, "some value");
-    context.addVariable("very-very-very-very-long-name", ORIGINAL, "some value");
-    context.addVariable("another-long-name", ORIGINAL, "some value");
+    context.addVariable("short-name", ORIGINAL, "some value", emptyMap());
+    context.addVariable("very-very-very-very-long-name", ORIGINAL, "some value", emptyMap());
+    context.addVariable("another-long-name", ORIGINAL, "some value", emptyMap());
 
     var report = LoggerListener.buildReport(context);
 
@@ -42,8 +43,8 @@ class LoggerListenerTest {
   @Test
   void reportShouldShowModifiedVariable() {
     LoggerListener.LogContext context = new LoggerListener.LogContext("test-name", TestType.DEFAULT);
-    context.addVariable("original-value", ORIGINAL, "some value");
-    context.addVariable("modified-value", MODIFIED, "some value");
+    context.addVariable("original-value", ORIGINAL, "some value", emptyMap());
+    context.addVariable("modified-value", MODIFIED, "some value", emptyMap());
 
     var report = LoggerListener.buildReport(context);
 

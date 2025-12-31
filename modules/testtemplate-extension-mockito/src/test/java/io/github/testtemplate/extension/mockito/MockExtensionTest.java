@@ -1,7 +1,7 @@
 package io.github.testtemplate.extension.mockito;
 
 import io.github.testtemplate.AlternativeTestTemplateExceptBuilder;
-import io.github.testtemplate.AlternativeTestValidatorBuilder;
+import io.github.testtemplate.AlternativeTestTemplateExceptPostBuilder;
 import io.github.testtemplate.Context;
 import io.github.testtemplate.ContextView;
 import io.github.testtemplate.DefaultTestTemplateBuilder;
@@ -80,7 +80,7 @@ class MockExtensionTest {
 
     @BeforeEach
     void setUp() {
-      var next = Mockito.mock(AlternativeTestValidatorBuilder.class);
+      var next = Mockito.mock(AlternativeTestTemplateExceptPostBuilder.class);
       Mockito.doReturn(next).when(builder).is(Mockito.<Function<ContextView, ?>>any());
     }
 

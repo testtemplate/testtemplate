@@ -6,7 +6,7 @@ dependencies {
   api project(':testtemplate-api')
 
   implementation project(':testtemplate-core')
-  implementation project(':testtemplate-junit5')
+  implementation project(':testtemplate-junit')
   compileOnly project(':testtemplate-extension-json')
   compileOnly project(':testtemplate-extension-mockito')
 

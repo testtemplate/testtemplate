@@ -6,14 +6,16 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-import java.util.List;
+import java.util.stream.Stream;
 
+import static io.github.testtemplate.TestTemplate.BLANK_STRING;
+import static io.github.testtemplate.TestTemplate.EMPTY_STRING;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PersonNameUtilsTest {
 
   @TestFactory
-  List<DynamicNode> formatName() {
+  Stream<DynamicNode> formatName() {
     return TestTemplate
         .defaultTest("should be formatted beginning with last name followed with first name")
         .given("first-name").is("Alice")
@@ -21,40 +23,14 @@ class PersonNameUtilsTest {
         .when(ctx -> PersonNameUtils.formatName(ctx.get("first-name"), ctx.get("last-name")))
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown, Alice"))
 
-        .test("should be formatted with last name when first name is null")
+        .test("should be formatted with last name when is null, empty or blank")
         .sameAsDefault()
-        .except("first-name").isNull()
+        .except("first-name").isNull().or(EMPTY_STRING).or(BLANK_STRING)
         .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
 
-        .test("should be formatted with last name when first name is empty")
+        .test("should throw an exception when last is null, empty or blank")
         .sameAsDefault()
-        .except("first-name").is("")
-        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
-
-        .test("should be formatted with last name when first name is blank")
-        .sameAsDefault()
-        .except("first-name").is("  ")
-        .then(ctx -> assertThat(ctx.result()).isEqualTo("Brown"))
-
-        .test("should throw an exception when last is null")
-        .sameAsDefault()
-        .except("last-name").isNull()
-        .then(ctx -> Assertions
-            .assertThat(ctx.exception())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("last name must not be null or empty"))
-
-        .test("should throw an exception when last is empty")
-        .sameAsDefault()
-        .except("last-name").is("")
-        .then(ctx -> Assertions
-            .assertThat(ctx.exception())
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("last name must not be null or empty"))
-
-        .test("should throw an exception when last is blank")
-        .sameAsDefault()
-        .except("last-name").is("  ")
+        .except("last-name").isNull().or(EMPTY_STRING).or(BLANK_STRING)
         .then(ctx -> Assertions
             .assertThat(ctx.exception())
             .isInstanceOf(IllegalArgumentException.class)

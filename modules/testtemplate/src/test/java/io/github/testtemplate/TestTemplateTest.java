@@ -3,14 +3,14 @@ package io.github.testtemplate;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TestTemplateTest {
 
   @TestFactory
-  List<DynamicNode> smokeTest() {
+  Stream<DynamicNode> smokeTest() {
     return TestTemplate
         .defaultTest("default")
         .given("greeting").is("hello")

@@ -13,11 +13,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 import static io.github.testtemplate.TestTemplate.json;
 import static io.github.testtemplate.TestTemplate.mock;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.json.JsonCompareMode.STRICT;
 
 @WebFluxTest(controllers = BookAdminController.class)
 class BookAdminControllerTest {
@@ -29,19 +30,22 @@ class BookAdminControllerTest {
   private WebTestClient client;
 
   @TestFactory
-  List<DynamicNode> create() {
+  Stream<DynamicNode> create() {
     return TestTemplate
         .defaultTest("Should create book")
         .given("service").as(mock()).use(service)
             .invoking(mock -> mock.create(Mockito.any())).willAnswer(i -> Mono.just(savedBook(i.getArgument(0))))
-        .given("request-body").is(() -> "{"
-            + "\"id\":\"1000\","
-            + "\"title\":\"Greatest Book Ever\","
-            + "\"description\":\"...\","
-            + "\"authorId\":\"70\","
-            + "\"publisher\":\"Imaginary Inc.\","
-            + "\"publishedDate\":\"2022-04-18\","
-            + "\"pageCount\":101}")
+        .given("request-body").is(() -> """
+            {
+              "id": "1000",
+              "title": "Greatest Book Ever",
+              "description": "...",
+              "authorId": "70",
+              "publisher": "Imaginary Inc.",
+              "publishedDate": "2022-04-18",
+              "pageCount": 101
+            }
+            """)
         .when(ctx -> client
             .post().uri("/books")
             .contentType(APPLICATION_JSON)
@@ -49,14 +53,17 @@ class BookAdminControllerTest {
             .exchange())
         .then(ctx -> ctx.result()
             .expectStatus().isCreated()
-            .expectBody().json("{"
-                + "\"id\": \"9000\","
-                + "\"title\": \"Greatest Book Ever\","
-                + "\"description\": \"...\","
-                + "\"author\": \"Brown, Alice\","
-                + "\"publisher\": \"Imaginary Inc.\","
-                + "\"publishedDate\": \"2022-04-18\","
-                + "\"pageCount\": 101}", true))
+            .expectBody().json("""
+                {
+                  "id": "9000",
+                  "title": "Greatest Book Ever",
+                  "description": "...",
+                  "author": "Brown, Alice",
+                  "publisher": "Imaginary Inc.",
+                  "publishedDate": "2022-04-18",
+                  "pageCount": 101
+                }
+                """, STRICT))
 
         .test("Should return 400 bad request when title is null")
         .sameAsDefault()
@@ -81,12 +88,12 @@ class BookAdminControllerTest {
         .test("Should ignore missing publisher")
         .sameAsDefault()
         .except("request-body").as(json()).path("$.publisher").isAbsent()
-        .then(ctx -> ctx.result().expectStatus().isCreated().expectBody().json("{\"publisher\":null}"))
+        .then(ctx -> ctx.result().expectStatus().isCreated().expectBody().json("{\"publisher\": null}"))
 
         .test("Should ignore missing published date")
         .sameAsDefault()
         .except("request-body").as(json()).path("$.publishedDate").isAbsent()
-        .then(ctx -> ctx.result().expectStatus().isCreated().expectBody().json("{\"publishedDate\":null}"))
+        .then(ctx -> ctx.result().expectStatus().isCreated().expectBody().json("{\"publishedDate\": null}"))
 
         .test("Should return 400 bad request when published date is malformed date")
         .sameAsDefault()

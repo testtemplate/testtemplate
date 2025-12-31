@@ -3,25 +3,28 @@ package io.github.testtemplate;
 import io.github.testtemplate.core.builder.TestBuilder;
 import io.github.testtemplate.extension.json.JsonExtension;
 import io.github.testtemplate.extension.mockito.MockExtension;
-import io.github.testtemplate.junit5.JUnit5TestSuiteFactory;
+import io.github.testtemplate.junit.JUnitTestSuiteFactory;
 
 import org.junit.jupiter.api.DynamicNode;
 
-import java.util.List;
+import java.util.stream.Stream;
 
 public final class TestTemplate {
+
+  public static final String EMPTY_STRING = "";
+  public static final String BLANK_STRING = "   ";
 
   private static JsonExtension<?, ?> jsonExtension;
   private static MockExtension<?, ?> mockExtension;
 
   private TestTemplate() {}
 
-  public static DefaultTestTemplateBuilder<List<DynamicNode>> defaultTest(String name) {
-    return junit5().defaultTest(name);
+  public static DefaultTestTemplateBuilder<Stream<DynamicNode>> defaultTest(String name) {
+    return junit().defaultTest(name);
   }
 
-  public static TestTemplatePreBuilder<List<DynamicNode>> junit5() {
-    return TestBuilder.builder(new JUnit5TestSuiteFactory());
+  public static TestTemplatePreBuilder<Stream<DynamicNode>> junit() {
+    return TestBuilder.builder(new JUnitTestSuiteFactory());
   }
 
   @SuppressWarnings("unchecked")

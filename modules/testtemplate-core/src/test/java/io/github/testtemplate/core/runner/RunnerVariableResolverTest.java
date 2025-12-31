@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.testtemplate.TestListener.VariableType.MODIFIED;
-import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
+import static io.github.testtemplate.VariableType.MODIFIED;
+import static io.github.testtemplate.VariableType.ORIGINAL;
 import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -255,44 +255,48 @@ class RunnerVariableResolverTest {
     @Test
     void getVariableShouldInvokedListenerWhenOriginalVariableIsLoaded() {
       variableResolver.getVariable("var-1").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-1"), Mockito.eq(ORIGINAL), Mockito.eq("val-1"));
+      Mockito.verify(listener).accept(Mockito.eq("var-1"), Mockito.eq(ORIGINAL), Mockito.eq("val-1"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     void getVariableShouldInvokedListenerWhenOverriddenVariableIsLoaded() {
       variableResolver.getVariable("var-2").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-2"), Mockito.eq(MODIFIED), Mockito.eq("ovr-2"));
+      Mockito.verify(listener).accept(Mockito.eq("var-2"), Mockito.eq(MODIFIED), Mockito.eq("ovr-2"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     void getVariableShouldInvokedListenerWhenModifiedVariableIsLoaded() {
       variableResolver.getVariable("var-3").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-3"), Mockito.eq(ORIGINAL), Mockito.eq("val-3"));
-      Mockito.verify(listener).accept(Mockito.eq("var-3"), Mockito.eq(MODIFIED), Mockito.eq("val-3 mod-3"));
+      Mockito.verify(listener).accept(Mockito.eq("var-3"), Mockito.eq(ORIGINAL), Mockito.eq("val-3"), Mockito.anyMap());
+      Mockito
+          .verify(listener)
+          .accept(Mockito.eq("var-3"), Mockito.eq(MODIFIED), Mockito.eq("val-3 mod-3"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenOriginalVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-4", "dft-4").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-4"), Mockito.eq(ORIGINAL), Mockito.eq("dft-4"));
+      Mockito.verify(listener).accept(Mockito.eq("var-4"), Mockito.eq(ORIGINAL), Mockito.eq("dft-4"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenOverriddenVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-5", "dft-5").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-5"), Mockito.eq(MODIFIED), Mockito.eq("ovr-5"));
+      Mockito.verify(listener).accept(Mockito.eq("var-5"), Mockito.eq(MODIFIED), Mockito.eq("ovr-5"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenModifiedVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-6", "dft-6").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-6"), Mockito.eq(ORIGINAL), Mockito.eq("dft-6"));
-      Mockito.verify(listener).accept(Mockito.eq("var-6"), Mockito.eq(MODIFIED), Mockito.eq("dft-6 mod-6"));
+      Mockito.verify(listener).accept(Mockito.eq("var-6"), Mockito.eq(ORIGINAL), Mockito.eq("dft-6"), Mockito.anyMap());
+      Mockito
+          .verify(listener)
+          .accept(Mockito.eq("var-6"), Mockito.eq(MODIFIED), Mockito.eq("dft-6 mod-6"), Mockito.anyMap());
       Mockito.verifyNoMoreInteractions(listener);
     }
   }

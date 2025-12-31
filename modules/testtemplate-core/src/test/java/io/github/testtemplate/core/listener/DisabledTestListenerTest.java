@@ -2,6 +2,7 @@ package io.github.testtemplate.core.listener;
 
 import io.github.testtemplate.TestListener;
 import io.github.testtemplate.TestType;
+import io.github.testtemplate.Variable;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,7 @@ class DisabledTestListenerTest {
     }
 
     @Override
-    public TestListener.Variable getVariable(String name) {
+    public Variable getVariable(String name) {
       throw new UnsupportedOperationException();
     }
 

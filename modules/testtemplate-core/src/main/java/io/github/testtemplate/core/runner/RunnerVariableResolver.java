@@ -2,7 +2,7 @@ package io.github.testtemplate.core.runner;
 
 import io.github.testtemplate.Context;
 import io.github.testtemplate.ContextView;
-import io.github.testtemplate.TestListener.VariableType;
+import io.github.testtemplate.VariableType;
 import io.github.testtemplate.core.TestModifier;
 import io.github.testtemplate.core.TestVariable;
 
@@ -10,8 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import static io.github.testtemplate.TestListener.VariableType.MODIFIED;
-import static io.github.testtemplate.TestListener.VariableType.ORIGINAL;
+import static io.github.testtemplate.VariableType.MODIFIED;
+import static io.github.testtemplate.VariableType.ORIGINAL;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableSet;
 
 final class RunnerVariableResolver {
@@ -20,7 +21,7 @@ final class RunnerVariableResolver {
 
   private final Map<String, InnerModifier> modifiers = new HashMap<>();
 
-  private Listener listener = (name, type, value) -> {};
+  private Listener listener = (name, type, value, metadata) -> {};
 
   RunnerVariableResolver(Iterable<TestVariable> variables, Iterable<TestModifier> modifiers) {
     variables.forEach(variable -> this.variables.put(
@@ -42,7 +43,7 @@ final class RunnerVariableResolver {
   }
 
   void registerListener(Listener listener) {
-    this.listener = listener != null ? listener : (name, type, value) -> {};
+    this.listener = listener != null ? listener : (name, type, value, metadata) -> {};
   }
 
   public Iterable<String> getVariableNames() {
@@ -59,7 +60,7 @@ final class RunnerVariableResolver {
           MODIFIED,
           () -> {
             var value = modifier.valueSupplier.apply(newContext);
-            listener.accept(name, MODIFIED, value);
+            listener.accept(name, MODIFIED, value, modifier.metadata);
             return value;
           },
           modifier.metadata);
@@ -74,7 +75,7 @@ final class RunnerVariableResolver {
           ORIGINAL,
           () -> {
             var value = variable.valueSupplier.apply(newContext);
-            listener.accept(name, ORIGINAL, value);
+            listener.accept(name, ORIGINAL, value, variable.metadata);
             return value;
           },
           variable.metadata);
@@ -95,7 +96,7 @@ final class RunnerVariableResolver {
           MODIFIED,
           () -> {
             var value = modifier.valueSupplier.apply(newContext);
-            listener.accept(name, MODIFIED, value);
+            listener.accept(name, MODIFIED, value, modifier.metadata);
             return value;
           },
           modifier.metadata);
@@ -106,7 +107,7 @@ final class RunnerVariableResolver {
       throw new TestRunnerException("The variable '" + name + "' is already defined");
     }
 
-    listener.accept(name, ORIGINAL, defaultValue);
+    listener.accept(name, ORIGINAL, defaultValue, emptyMap());
     return new RunnerVariable(name, ORIGINAL, () -> defaultValue);
   }
 
@@ -132,7 +133,7 @@ final class RunnerVariableResolver {
   @FunctionalInterface
   public interface Listener {
 
-    void accept(String name, VariableType type, Object value);
+    void accept(String name, VariableType type, Object value, Map<String, Object> metadata);
 
   }
 
