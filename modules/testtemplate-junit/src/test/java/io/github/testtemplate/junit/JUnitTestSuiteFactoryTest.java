@@ -48,13 +48,13 @@ class JUnitTestSuiteFactoryTest {
     var factory = new JUnitTestSuiteFactory();
     Assertions
         .assertThatThrownBy(() -> factory
-            .getSuite(Stream.<TestSuiteFactory.Test>of(new UnkownTest()))
+            .getSuite(Stream.<TestSuiteFactory.Test>of(new UnknownTest()))
             .findFirst())
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Unknown test: io.github.testtemplate.junit.JUnitTestSuiteFactoryTest$UnkownTest");
+        .hasMessage("Unknown test: io.github.testtemplate.junit.JUnitTestSuiteFactoryTest$UnknownTest");
   }
 
-  static class UnkownTest implements TestSuiteFactory.Test {
+  static class UnknownTest implements TestSuiteFactory.Test {
     @Override
     public String getName() {
       return "unknown";
