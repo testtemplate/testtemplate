@@ -1,64 +1,39 @@
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+apply plugin: 'com.vanniktech.maven.publish'
 
-publishing {
-  publications {
-    javaLibrary(MavenPublication) {
-      from components.java
+mavenPublishing {
+  publishToMavenCentral(true)
+  signAllPublications()
 
-      pom {
-        name = project.name
-        description = project.description
-        url = 'https://github.com/testtemplate/testtemplate'
-        licenses {
-          license {
-            name = 'The MIT License'
-            url = 'https://github.com/testtemplate/testtemplate/blob/master/LICENSE'
-          }
-        }
-        developers {
-          developer {
-            name = 'Guillaume Girard'
-          }
-        }
-        scm {
-          url = 'https://github.com/testtemplate/testtemplate.git'
-        }
-        issueManagement {
-          url = 'https://github.com/testtemplate/testtemplate/issues'
-          system = 'GitHub issues'
-        }
-        ciManagement {
-          url = 'https://github.com/testtemplate/testtemplate/actions'
-          system = 'GitHub actions'
-        }
+  coordinates(project.group.toString(), project.name.toString(), project.version.toString())
+
+  pom {
+    name = project.name
+    description = project.description
+    url = 'https://github.com/testtemplate/testtemplate'
+    licenses {
+      license {
+        name = 'The MIT License'
+        url = 'https://github.com/testtemplate/testtemplate/blob/master/LICENSE'
       }
     }
-  }
-
-  repositories {
-    maven {
-      name = "OSSRH"
-
-      if (!isReleasedVersion) {
-        url = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
-      } else {
-        url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
-      }
-
-      credentials {
-        username = findProperty("ossrhUsername")
-        password = findProperty("ossrhPassword")
+    developers {
+      developer {
+        name = "Guillaume Girard"
+        url = "https://github.com/ca-guig/"
       }
     }
-  }
-}
-
-signing {
-  def signingKey = findProperty("signingKey")
-  def signingPwd = findProperty("signingPassword")
-  if (signingKey) {
-    useInMemoryPgpKeys(signingKey, signingPwd)
-    sign publishing.publications.javaLibrary
+    scm {
+      url = 'https://github.com/testtemplate/testtemplate/'
+      connection = 'scm:git:git://github.com/testtemplate/testtemplate.git'
+      developerConnection = 'scm:git:ssh://git@github.com/testtemplate/testtemplate.git'
+    }
+    issueManagement {
+      url = 'https://github.com/testtemplate/testtemplate/issues'
+      system = 'GitHub issues'
+    }
+    ciManagement {
+      url = 'https://github.com/testtemplate/testtemplate/actions'
+      system = 'GitHub actions'
+    }
   }
 }
