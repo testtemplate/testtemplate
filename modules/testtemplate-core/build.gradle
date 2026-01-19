@@ -1,6 +1,9 @@
-description = 'A fluent builder to write a suite of test from a default one and its alternatives'
+plugins {
+  id 'java-common-conventions'
+  id 'maven-publish-conventions'
+}
 
-apply from: "$rootDir/gradle/java-publication.gradle"
+description = 'A fluent builder to write a suite of test from a default one and its alternatives'
 
 dependencies {
   implementation project(':testtemplate-api')

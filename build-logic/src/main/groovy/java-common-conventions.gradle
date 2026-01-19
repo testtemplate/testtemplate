@@ -1,0 +1,29 @@
+plugins {
+  id 'java-library'
+  id 'checkstyle'
+  id 'org.shipkit.shipkit-auto-version'
+}
+
+group = 'io.github.testtemplate'
+
+repositories {
+  mavenCentral()
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(21)
+  }
+}
+
+test {
+  useJUnitPlatform()
+
+  testLogging {
+    events = ['FAILED', 'PASSED', 'SKIPPED']
+  }
+}
+
+checkstyle {
+  toolVersion = libs.versions.checkstyle.get()
+}

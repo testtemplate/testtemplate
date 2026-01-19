@@ -1,6 +1,9 @@
-description = 'A test template builder extension to support JSON values'
+plugins {
+  id 'java-common-conventions'
+  id 'maven-publish-conventions'
+}
 
-apply from: "$rootDir/gradle/java-publication.gradle"
+description = 'A test template builder extension to support JSON values'
 
 dependencies {
   implementation project(':testtemplate-api')

@@ -1,6 +1,9 @@
-description = 'Support of JUnit 5'
+plugins {
+  id 'java-common-conventions'
+  id 'maven-publish-conventions'
+}
 
-apply from: "$rootDir/gradle/java-publication.gradle"
+description = 'Support of JUnit 5'
 
 dependencies {
   api libs.junit.api
