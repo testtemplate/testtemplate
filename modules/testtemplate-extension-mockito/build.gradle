@@ -1,6 +1,8 @@
-description = 'A test template builder extension to support Mockito mocks'
+plugins {
+  id 'java-common-conventions'
+}
 
-apply from: "$rootDir/gradle/java-publication.gradle"
+description = 'A test template builder extension to support Mockito mocks'
 
 dependencies {
   implementation project(':testtemplate-api')
