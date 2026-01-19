@@ -1,5 +1,6 @@
 plugins {
   id 'java-common-conventions'
+  id 'maven-publish-conventions'
 }
 
 description = 'Support of JUnit 5'

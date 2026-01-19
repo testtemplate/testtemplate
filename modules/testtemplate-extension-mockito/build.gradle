@@ -1,5 +1,6 @@
 plugins {
   id 'java-common-conventions'
+  id 'maven-publish-conventions'
 }
 
 description = 'A test template builder extension to support Mockito mocks'

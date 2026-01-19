@@ -1,5 +1,6 @@
 plugins {
   id 'java-common-conventions'
+  id 'maven-publish-conventions'
 }
 
 description = 'A fluent builder to write a suite of test from a default one and its alternatives'
