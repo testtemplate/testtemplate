@@ -14,8 +14,8 @@ mavenPublishing {
     url = 'https://github.com/testtemplate/testtemplate'
     licenses {
       license {
-        name = 'The MIT License'
-        url = 'https://github.com/testtemplate/testtemplate/blob/master/LICENSE'
+        name = 'The Apache License, Version 2.0'
+        url = 'https://www.apache.org/licenses/LICENSE-2.0.txt'
       }
     }
     developers {

@@ -1,102 +1,87 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.TestListener;
-import io.github.testtemplate.TestSuiteFactory;
-import io.github.testtemplate.core.TestDefinition;
+import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
+import io.github.testtemplate.api.ContextGiven;
+import io.github.testtemplate.api.ContextResult;
+import io.github.testtemplate.api.function.ExceptionalConsumer;
+import io.github.testtemplate.api.function.ExceptionalFunction;
 
-public final class TestRunner {
+final class TestRunner<R> {
 
-  private final List<TestListener> listeners = new ArrayList<>();
+  private final ExceptionalFunction<ContextGiven, R> template;
 
-  public TestRunner(List<TestListener> listeners) {
-    this.listeners.addAll(listeners);
+  private final  ExceptionalConsumer<ContextResult<R>> validator;
+
+  private final RunnerVariableResolver variableResolver;
+
+  private Listener<R> listener = new NoOpListener<>();
+
+  TestRunner(
+      ExceptionalFunction<ContextGiven, R> template,
+      ExceptionalConsumer<ContextResult<R>> validator,
+      RunnerVariableResolver variableResolver) {
+    this.template = template;
+    this.validator = validator;
+    this.variableResolver = variableResolver;
   }
 
-  public <R> TestSuiteFactory.Test toInstance(TestDefinition<R> test) {
-    if (test.isParameterized()) {
-      return new TestGroupInstance<>(test);
-    } else {
-      return new TestItemInstance<>(test);
-    }
+  public void register(@Nullable Listener<R> listener) {
+    this.listener = listener != null ? listener : new NoOpListener<>();
   }
 
-  private final class TestItemInstance<R> implements TestSuiteFactory.TestItem {
+  public void execute() {
 
-    private final TestDefinition<R> test;
-    private final String resolvedName;
-    private final RunnerVariableResolver variableResolver;
-    private final RunnerTest testContext;
-
-    private TestItemInstance(TestDefinition<R> test) {
-      this.test = test;
-      this.variableResolver = new RunnerVariableResolver(test.getVariables(), test.getModifiers());
-      this.resolvedName = resolveName(test.getName(), variableResolver);
-      this.testContext = new RunnerTest(resolvedName, test.getType(), variableResolver, test.getAttributes());
-      variableResolver.registerListener((name, type, value, metadata) ->
-          listeners.forEach(listener -> listener.variable(testContext, name, type, value, metadata)));
-    }
-
-    @Override
-    public String getName() {
-      return resolvedName;
-    }
-
-    @Override
-    public void execute() {
-      listeners.forEach(listener -> listener.before(testContext));
+    listener.before();
+    try {
+      RunnerContextResult<R> contextResult;
       try {
-        RunnerValidatorContextView<R> validatorContext;
-        try {
-          RunnerContext context = new RunnerContext(variableResolver);
-          R result = test.getTemplate().run(context);
-          listeners.forEach(listener -> listener.result(testContext, result));
-          validatorContext = new RunnerResultValidatorContextView<>(variableResolver, result);
-        } catch (TestRunnerException exception) {
-          throw exception;
-        } catch (Throwable exception) {
-          listeners.forEach(listener -> listener.exception(testContext, exception));
-          validatorContext = new RunnerExceptionValidatorContextView<>(variableResolver, exception);
-        }
-
-        test.getValidator().validate(validatorContext);
-      } finally {
-        listeners.forEach(listener -> listener.after(testContext));
+        RunnerContextGiven context = new RunnerContextGiven(variableResolver);
+        R result = template.apply(context);
+        listener.result(result);
+        contextResult = new RunnerContextResult<>(variableResolver, result);
+      } catch (TestRunnerException exception) {
+        throw exception;
+      } catch (Exception exception) {
+        listener.exception(exception);
+        contextResult = new RunnerContextResult<>(variableResolver, exception);
       }
-    }
 
-    private static String resolveName(String name, RunnerVariableResolver variableResolver) {
-      return TestNameSubstitutor.resolveName(name, variableResolver);
+      validator.accept(contextResult);
+      contextResult.doubleCheck();
+    } catch (TestRunnerException exception) {
+      throw exception;
+    } catch (Exception exception) {
+      throw new TestRunnerException("The test has thrown an unexpected exception", exception);
+    } finally {
+      listener.after();
     }
   }
 
-  private final class TestGroupInstance<R> implements TestSuiteFactory.TestGroup {
+  interface Listener<R> {
 
-    private final TestDefinition<R> test;
+    void before();
 
-    private final String resolvedName;
+    void after();
 
-    private TestGroupInstance(TestDefinition<R> test) {
-      this.test = test;
-      var variableResolver = new RunnerVariableResolver(test.getVariables(), test.getModifiers());
-      this.resolvedName = resolveName(test.getName(), variableResolver);
-    }
+    void result(@Nullable R result);
 
-    @Override
-    public String getName() {
-      return resolvedName;
-    }
+    void exception(Throwable exception);
+
+  }
+
+  private static final class NoOpListener<R> implements Listener<R> {
 
     @Override
-    public Stream<? extends TestSuiteFactory.Test> getTests() {
-      return test.deparameterize().map(t -> toInstance(t));
-    }
+    public void before() {}
 
-    private static String resolveName(String name, RunnerVariableResolver variableResolver) {
-      return TestNameSubstitutor.resolveName(name, variableResolver);
-    }
+    @Override
+    public void after() {}
+
+    @Override
+    public void exception(Throwable exception) {}
+
+    @Override
+    public void result(@Nullable R result) {}
   }
 }

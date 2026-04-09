@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.Variable;
-import io.github.testtemplate.VariableType;
-
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
-import static java.util.Collections.emptyMap;
+import org.jspecify.annotations.Nullable;
+
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.api.VariableType;
+import io.github.testtemplate.api.function.ExceptionalSupplier;
 
 final class RunnerVariable implements Variable {
 
@@ -15,18 +15,33 @@ final class RunnerVariable implements Variable {
 
   private final VariableType type;
 
-  private final Supplier<Object> valueSupplier;
+  private final ExceptionalSupplier<Object> valueSupplier;
+
+  private final RunnerVariableDescriptor valueDescriptor;
 
   private final Map<String, Object> metadata = new HashMap<>();
 
-  RunnerVariable(String name, VariableType type, Supplier<Object> valueSupplier) {
-    this(name, type, valueSupplier, emptyMap());
-  }
-
-  RunnerVariable(String name, VariableType type, Supplier<Object> valueSupplier, Map<String, Object> metadata) {
+  RunnerVariable(
+      String name,
+      VariableType type,
+      ExceptionalSupplier<Object> valueSupplier,
+      RunnerVariableDescriptor valueDescriptor) {
     this.name = name;
     this.type = type;
     this.valueSupplier = valueSupplier;
+    this.valueDescriptor = valueDescriptor;
+  }
+
+  RunnerVariable(
+      String name,
+      VariableType type,
+      ExceptionalSupplier<Object> valueSupplier,
+      RunnerVariableDescriptor valueDescriptor,
+      Map<String, Object> metadata) {
+    this.name = name;
+    this.type = type;
+    this.valueSupplier = valueSupplier;
+    this.valueDescriptor = valueDescriptor;
     this.metadata.putAll(metadata);
   }
 
@@ -41,12 +56,21 @@ final class RunnerVariable implements Variable {
   }
 
   @Override
-  public Object getValue() {
-    return valueSupplier.get();
+  public @Nullable Object getValue() {
+    try {
+      return valueSupplier.get();
+    } catch (Exception e) {
+      throw new TestRunnerException("The variable '" + name + "' has thrown an exception", e);
+    }
   }
 
   @Override
-  public Object getMetadata(String key) {
+  public String getDescription() {
+    return valueDescriptor.describe(getValue());
+  }
+
+  @Override
+  public @Nullable Object getMetadata(String key) {
     return metadata.get(key);
   }
 

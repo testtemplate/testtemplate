@@ -1,299 +1,277 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.ContextualTemplate;
-import io.github.testtemplate.ContextualValidator;
-import io.github.testtemplate.TestListener;
-import io.github.testtemplate.TestSuiteFactory;
-import io.github.testtemplate.core.TestDefinition;
-import io.github.testtemplate.core.TestModifier;
-import io.github.testtemplate.core.TestParameter;
-import io.github.testtemplate.core.TestVariable;
+import static io.github.testtemplate.api.VariableType.MODIFIED;
+import static io.github.testtemplate.api.VariableType.ORIGINAL;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.opentest4j.AssertionFailedError;
-import org.opentest4j.TestAbortedException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+@ExtendWith(MockitoExtension.class)
+class TestRunnerTest {
 
-import static io.github.testtemplate.TestType.DEFAULT;
-import static io.github.testtemplate.VariableType.ORIGINAL;
-import static java.util.Collections.emptyList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.fail;
+  @Mock
+  private RunnerVariableResolver resolver;
 
-public class TestRunnerTest {
+  private final RunnerVariableDescriptor valueDescriptor = new RunnerVariableDescriptor();
 
-  private static final String TEST_NAME = "test-name";
-  private static final ContextualTemplate<Object> NO_OP_TEMPLATE = c -> null;
-  private static final Set<TestVariable> EMPTY_VARIABLE_SET = Set.of();
-  private static final Set<TestModifier> EMPTY_MODIFIER_SET = Set.of();
-  private static final Set<TestParameter> EMPTY_PARAMETER_SET = Set.of();
-  private static final ContextualValidator<Object> NO_OP_VALIDATOR = c -> {};
-  private static final Map<String, Object> EMPTY_ATTRIBUTE_MAP = Map.of();
+  @Test
+  void shouldSilentlyReturnWhenResultIsTheExpectedOne() {
+    var testRunner = new TestRunner<>(
+        ctx -> "This is the result of the test",
+        ctx -> Assertions.assertThat(ctx.result()).isEqualTo("This is the result of the test"),
+        resolver);
+    testRunner.execute();
+  }
 
-  @Nested
-  class RunTest {
+  @Test
+  void shouldThrowExceptionWhenResultIsNotTheExceptedOne() {
+    var testRunner = new TestRunner<>(
+        ctx -> "This is the result of the test",
+        ctx -> Assertions.assertThat(ctx.result()).isEqualTo("But we expect something else"),
+        resolver);
 
-    private final TestRunner runner = new TestRunner(emptyList());
+    Assertions
+        .assertThatThrownBy(testRunner::execute)
+        .isInstanceOf(AssertionFailedError.class)
+        .hasMessageContaining("But we expect something else");
+  }
 
-    @Test
-    void shouldSilentlyReturnWhenResultIsTheExpectedOne() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> "This is the result of the test",
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> assertThat(c.result()).isEqualTo("This is the result of the test"),
-          EMPTY_ATTRIBUTE_MAP);
+  @Test
+  void shouldThrowAssertionErrorWhenAnExceptionIsThrown() {
+    var testRunner = new TestRunner<>(
+        ctx -> { throw new Exception("The invocation throws an exception"); },
+        ctx -> Assertions.assertThat(ctx.result()).isEqualTo("This is the result of the test"),
+        resolver);
 
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
-    }
+    Assertions
+        .assertThatThrownBy(testRunner::execute)
+        .isInstanceOf(AssertionFailedError.class)
+        .hasMessage("The test expects a result but an exception was thrown");
+  }
 
-    @Test
-    void shouldThrowExceptionWhenResultIsNotTheExceptedOne() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> "This is the result of the test",
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> assertThat(c.result()).isEqualTo("But we expect something else"),
-          EMPTY_ATTRIBUTE_MAP);
+  @Test
+  void shouldSilentlyReturnWhenExceptionIsTheExpectedOne() {
+    var testRunner = new TestRunner<>(
+        ctx -> { throw new Exception("This is expected"); },
+        ctx -> Assertions
+            .assertThat(ctx.exception())
+            .isInstanceOf(Exception.class)
+            .hasMessage("This is expected"),
+        resolver);
 
-      Assertions
-          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
-          .isInstanceOf(AssertionFailedError.class)
-          .hasMessageContaining("But we expect something else");
-    }
+    testRunner.execute();
+  }
 
-    @Test
-    void shouldSilentlyReturnWhenExceptionIsTheExpectedOne() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> { throw new Exception("This is expected"); },
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("This is expected"),
-          EMPTY_ATTRIBUTE_MAP);
+  @Test
+  void shouldThrowExceptionWhenExceptionIsNotTheExceptedOne() {
+    var testRunner = new TestRunner<>(
+        ctx -> { throw new Exception("This is an exception"); },
+        ctx -> Assertions
+            .assertThat(ctx.exception())
+            .isInstanceOf(Exception.class)
+            .hasMessage("But expect an another one"),
+        resolver);
 
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
-    }
+    Assertions
+        .assertThatThrownBy(testRunner::execute)
+        .isInstanceOf(AssertionFailedError.class)
+        .hasMessageContaining("But expect an another one");
+  }
 
-    @Test
-    void shouldThrowExceptionWhenExceptionIsNotTheExceptedOne() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> { throw new Exception("This is an exception"); },
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> assertThat(c.exception()).isInstanceOf(Exception.class).hasMessage("But expect another one"),
-          EMPTY_ATTRIBUTE_MAP);
+  @Test
+  void shouldThrowExceptionWhenNoExceptionIsThrown() {
+    var testRunner = new TestRunner<>(
+        ctx -> "This is the unexpected result of the test",
+        ctx -> Assertions
+            .assertThat(ctx.exception())
+            .isInstanceOf(Exception.class)
+            .hasMessage("But expect an exception"),
+        resolver);
 
-      Assertions
-          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
-          .isInstanceOf(AssertionFailedError.class)
-          .hasMessageContaining("But expect another one");
-    }
+    Assertions
+        .assertThatThrownBy(testRunner::execute)
+        .isInstanceOf(AssertionFailedError.class)
+        .hasMessage("The test expects an exception but no exception was thrown");
+  }
 
-    @Test
-    void shouldNotValidateTestRunException() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> { throw new TestRunnerException("This is for internal purpose"); },
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> { throw new RuntimeException("Not expected"); },
-          EMPTY_ATTRIBUTE_MAP);
+  @Test
+  void shouldSilentlyReturnWhenResultIsNotVerifiedButThereIsNoException() {
+    var testRunner = new TestRunner<>(
+        ctx -> "This is the result of the test",
+        ctx -> { /* no check */ },
+        resolver);
 
-      Assertions
-          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
-          .isInstanceOf(TestRunnerException.class)
-          .hasMessage("This is for internal purpose");
-    }
+    testRunner.execute();
+  }
+
+  @Test
+  void shouldThrowExceptionWhenResultIsNotVerifiedButThereIsAnException() {
+    var testRunner = new TestRunner<>(
+        ctx -> { throw new Exception("The invocation throws an exception"); },
+        ctx -> { /* no check */ },
+        resolver);
+
+    Assertions
+        .assertThatThrownBy(testRunner::execute)
+        .isInstanceOf(AssertionFailedError.class)
+        .hasMessage("The test expects a result but an exception was thrown");
+  }
+
+  @Test
+  void shouldCallVariableResolverWhenVariableIsGetInContextGiven() {
+    Mockito
+        .doReturn(
+            new RunnerVariable("test-variable", ORIGINAL, () -> "This is the result of the variable", valueDescriptor))
+        .when(resolver)
+        .getVariable("test-variable");
+    var testRunner = new TestRunner<>(
+        ctx -> ctx.get("test-variable"),
+        ctx -> Assertions.assertThat(ctx.result()).isEqualTo("This is the result of the variable"),
+        resolver);
+
+    testRunner.execute();
+  }
+
+  @Test
+  void shouldCallVariableResolverWhenVariableIsGivenInContextGiven() {
+    Mockito
+        .doReturn(
+            new RunnerVariable("test-variable", MODIFIED, () -> "This is the result of the variable", valueDescriptor))
+        .when(resolver)
+        .getVariableOrDefault("test-variable", "default value");
+    TestRunner<String> testRunner = new TestRunner<>(
+        ctx -> ctx.given("test-variable").is("default value"),
+        ctx -> Assertions.assertThat(ctx.result()).isEqualTo("This is the result of the variable"),
+        resolver);
+
+    testRunner.execute();
+  }
+
+  @Test
+  void shouldCallVariableResolverWhenVariableIsGetInContextResult() {
+    Mockito
+        .doReturn(new RunnerVariable("expectation", ORIGINAL, () -> "This is the result of the test", valueDescriptor))
+        .when(resolver)
+        .getVariable("expectation");
+    TestRunner<String> testRunner = new TestRunner<>(
+        ctx -> "This is the result of the test",
+        ctx -> Assertions
+            .assertThat(ctx.result())
+            .isEqualTo(ctx.get("expectation")),
+        resolver);
+
+    testRunner.execute();
+  }
+
+  @Test
+  void shouldSilentlyReturnWhenResultIsAnException() {
+    TestRunner<Exception> testRunner = new TestRunner<>(
+        ctx -> new Exception("This is ok"),
+        ctx -> Assertions
+            .assertThat(ctx.result())
+            .isInstanceOf(Exception.class)
+            .hasMessage("This is ok"),
+        resolver);
+
+    testRunner.execute();
   }
 
   @Nested
-  class ListenerTest {
-
-    private final TestListener listener = Mockito.mock(TestListener.class);
-
-    private final TestRunner runner = new TestRunner(List.of(listener));
+  class RegisterListenerTest {
 
     @Test
-    void shouldBeInvokedBeforeTest() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          NO_OP_TEMPLATE,
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
+    void shouldInvokeListenerCallbacksOnSuccessfulExecution() {
+      TestRunner.Listener<String> listener = Mockito.mock();
+      var testRunner = new TestRunner<>(
+          ctx -> "result",
+          ctx -> {},
+          resolver);
+      testRunner.register(listener);
 
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
+      testRunner.execute();
 
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito.verify(listener).before(context.capture());
-
-      assertThat(context.getValue())
-          .hasFieldOrPropertyWithValue("name", TEST_NAME)
-          .hasFieldOrPropertyWithValue("type", DEFAULT);
+      var inOrder = Mockito.inOrder(listener);
+      inOrder.verify(listener).before();
+      inOrder.verify(listener).result("result");
+      inOrder.verify(listener).after();
+      Mockito.verify(listener, Mockito.never()).exception(Mockito.any());
     }
 
     @Test
-    void shouldBeInvokedAfterTest() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          NO_OP_TEMPLATE,
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
+    void shouldInvokeListenerCallbacksWhenTemplateThrows() {
+      TestRunner.Listener<Object> listener = Mockito.mock();
+      var cause = new Exception("boom");
+      var testRunner = new TestRunner<>(
+          ctx -> { throw cause; },
+          ctx -> Assertions.assertThat(ctx.exception()).isSameAs(cause),
+          resolver);
+      testRunner.register(listener);
 
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
+      testRunner.execute();
 
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito.verify(listener).after(context.capture());
-
-      assertThat(context.getValue())
-          .hasFieldOrPropertyWithValue("name", TEST_NAME)
-          .hasFieldOrPropertyWithValue("type", DEFAULT);
+      var inOrder = Mockito.inOrder(listener);
+      inOrder.verify(listener).before();
+      inOrder.verify(listener).exception(cause);
+      inOrder.verify(listener).after();
+      Mockito.verify(listener, Mockito.never()).result(Mockito.any());
     }
 
     @Test
-    void shouldAlwaysBeInvokedAfterTest() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          NO_OP_TEMPLATE,
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          c -> fail(),
-          EMPTY_ATTRIBUTE_MAP);
+    void shouldFallBackToNoOpWhenNullListenerRegistered() {
+      var testRunner = new TestRunner<>(
+          ctx -> "result",
+          ctx -> {},
+          resolver);
+      testRunner.register(null);
+
+      Assertions.assertThatCode(testRunner::execute).doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldRethrowTestRunnerExceptionFromTemplateUnwrapped() {
+      var original = new TestRunnerException("internal error");
+      var testRunner = new TestRunner<>(
+          ctx -> { throw original; },
+          ctx -> {},
+          resolver);
 
       Assertions
-          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
-          .isInstanceOf(AssertionFailedError.class);
-
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito.verify(listener).after(context.capture());
-
-      assertThat(context.getValue())
-          .hasFieldOrPropertyWithValue("name", TEST_NAME)
-          .hasFieldOrPropertyWithValue("type", DEFAULT);
+          .assertThatThrownBy(testRunner::execute)
+          .isSameAs(original);
     }
 
     @Test
-    void shouldNotCatchException() {
-      Mockito.doThrow(TestAbortedException.class).when(listener).before(Mockito.any());
-
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          NO_OP_TEMPLATE,
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
+    void shouldRethrowTestRunnerExceptionFromValidatorUnwrapped() {
+      var original = new TestRunnerException("validation internal error");
+      var testRunner = new TestRunner<>(
+          ctx -> "result",
+          ctx -> { throw original; },
+          resolver);
 
       Assertions
-          .assertThatThrownBy(() -> ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute())
-          .isInstanceOf(TestAbortedException.class);
-
-      Mockito.verify(listener, Mockito.never()).after(Mockito.any());
+          .assertThatThrownBy(testRunner::execute)
+          .isSameAs(original);
     }
 
     @Test
-    void shouldBeInvokedWithResult() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> "welcome",
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
+    void shouldWrapUnexpectedValidatorExceptionInTestRunnerException() {
+      var cause = new RuntimeException("unexpected");
+      var testRunner = new TestRunner<>(
+          ctx -> "result",
+          ctx -> { throw cause; },
+          resolver);
 
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
-
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito.verify(listener).result(context.capture(), Mockito.eq("welcome"));
-      Mockito.verify(listener, Mockito.never()).exception(Mockito.any(), Mockito.any());
-
-      assertThat(context.getValue())
-          .hasFieldOrPropertyWithValue("name", TEST_NAME)
-          .hasFieldOrPropertyWithValue("type", DEFAULT);
-    }
-
-    @Test
-    void shouldBeInvokedWithException() {
-      var exception = new Exception("oops");
-
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> { throw exception; },
-          EMPTY_VARIABLE_SET,
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
-
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
-
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito.verify(listener, Mockito.never()).result(Mockito.any(), Mockito.any());
-      Mockito.verify(listener).exception(context.capture(), Mockito.eq(exception));
-
-      assertThat(context.getValue())
-          .hasFieldOrPropertyWithValue("name", TEST_NAME)
-          .hasFieldOrPropertyWithValue("type", DEFAULT);
-    }
-
-    @Test
-    void shouldBeInvokedWithVariable() {
-      var test = new TestDefinition<>(
-          TEST_NAME,
-          DEFAULT,
-          c -> c.get("greeting"),
-          Set.of(new TestVariable("greeting", c -> "welcome")),
-          EMPTY_MODIFIER_SET,
-          EMPTY_PARAMETER_SET,
-          NO_OP_VALIDATOR,
-          EMPTY_ATTRIBUTE_MAP);
-
-      ((TestSuiteFactory.TestItem) runner.toInstance(test)).execute();
-
-      var context = ArgumentCaptor.forClass(TestListener.Test.class);
-      Mockito
-          .verify(listener)
-          .variable(
-              context.capture(),
-              Mockito.eq("greeting"),
-              Mockito.eq(ORIGINAL),
-              Mockito.eq("welcome"),
-              Mockito.anyMap());
+      Assertions
+          .assertThatThrownBy(testRunner::execute)
+          .isInstanceOf(TestRunnerException.class)
+          .hasMessage("The test has thrown an unexpected exception")
+          .hasCause(cause);
     }
   }
 }

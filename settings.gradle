@@ -7,9 +7,10 @@ rootProject.name = 'testtemplate-root'
 include('testtemplate')
 include('testtemplate-api')
 include('testtemplate-core')
+include('testtemplate-junit')
+
 include('testtemplate-extension-json')
 include('testtemplate-extension-mockito')
-include('testtemplate-junit')
 
 include('examples')
 

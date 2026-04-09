@@ -1,41 +1,38 @@
 package io.github.testtemplate.core;
 
-import io.github.testtemplate.ContextView;
-
-import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableMap;
+import org.jspecify.annotations.Nullable;
+
+import io.github.testtemplate.api.Context;
+import io.github.testtemplate.api.function.ExceptionalFunction;
 
 public final class TestModifier {
 
   private final String name;
 
-  private final Function<ContextView, ?> valueSupplier;
+  private final Map<String, @Nullable Object> metadata;
 
-  private final Map<String, Object> metadata = new HashMap<>();
+  private final ExceptionalFunction<Context, ?> valueSupplier;
 
-  public TestModifier(String name, Function<ContextView, ?> valueSupplier) {
-    this(name, valueSupplier, emptyMap());
-  }
-
-  public TestModifier(String name, Function<ContextView, ?> valueSupplier, Map<String, Object> metadata) {
+  public TestModifier(
+      String name,
+      Map<String, @Nullable Object> metadata,
+      ExceptionalFunction<Context, ?> valueSupplier) {
     this.name = name;
     this.valueSupplier = valueSupplier;
-    this.metadata.putAll(metadata);
+    this.metadata = Map.copyOf(metadata);
   }
 
   public String getName() {
     return name;
   }
 
-  public Function<ContextView, ?> getValueSupplier() {
-    return valueSupplier;
+  public Map<String, @Nullable Object> getMetadata() {
+    return metadata;
   }
 
-  public Map<String, Object> getMetadata() {
-    return unmodifiableMap(metadata);
+  public ExceptionalFunction<Context, ?> getValueSupplier() {
+    return valueSupplier;
   }
 }

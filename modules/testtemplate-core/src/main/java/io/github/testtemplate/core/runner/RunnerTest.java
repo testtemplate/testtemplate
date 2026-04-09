@@ -1,11 +1,13 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.TestListener.Test;
-import io.github.testtemplate.TestType;
-import io.github.testtemplate.Variable;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jspecify.annotations.Nullable;
+
+import io.github.testtemplate.api.Test;
+import io.github.testtemplate.api.TestType;
+import io.github.testtemplate.api.Variable;
 
 final class RunnerTest implements Test {
 
@@ -13,14 +15,14 @@ final class RunnerTest implements Test {
 
   private final TestType type;
 
-  private final RunnerVariableResolver variableResolver;
+  private final RunnerVariableResolver resolver;
 
-  private final Map<String, Object> attributes = new HashMap<>();
+  private final Map<String, @Nullable Object> attributes = new HashMap<>();
 
-  RunnerTest(String name, TestType type, RunnerVariableResolver variableResolver, Map<String, Object> attributes) {
+  RunnerTest(String name, TestType type, RunnerVariableResolver resolver, Map<String, @Nullable Object> attributes) {
     this.name = name;
     this.type = type;
-    this.variableResolver = variableResolver;
+    this.resolver = resolver;
     this.attributes.putAll(attributes);
   }
 
@@ -36,16 +38,16 @@ final class RunnerTest implements Test {
 
   @Override
   public Iterable<String> getVariableNames() {
-    return variableResolver.getVariableNames();
+    return resolver.getVariableNames();
   }
 
   @Override
   public Variable getVariable(String name) {
-    return variableResolver.getVariable(name);
+    return resolver.getVariable(name);
   }
 
   @Override
-  public Object getAttribute(String key) {
+  public @Nullable Object getAttribute(String key) {
     return attributes.get(key);
   }
 
@@ -55,7 +57,7 @@ final class RunnerTest implements Test {
   }
 
   @Override
-  public void setAttribute(String key, Object value) {
+  public void setAttribute(String key, @Nullable Object value) {
     attributes.put(key, value);
   }
 

@@ -1,38 +1,32 @@
 package io.github.testtemplate.core;
 
-import io.github.testtemplate.ContextView;
-
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableMap;
+import org.jspecify.annotations.Nullable;
 
-public final class TestParameter {
+import io.github.testtemplate.api.Context;
+import io.github.testtemplate.api.function.ExceptionalFunction;
+
+public class TestParameter {
 
   private final String name;
 
   private final String group;
 
-  private final List<Function<ContextView, ?>> valueSuppliers;
+  private final Map<String, @Nullable Object> metadata;
 
-  private final Map<String, Object> metadata = new HashMap<>();
-
-  public TestParameter(String name, String group, List<Function<ContextView, ?>> valueSuppliers) {
-    this(name, group, valueSuppliers, emptyMap());
-  }
+  private final List<ExceptionalFunction<Context, ?>> valueSuppliers;
 
   public TestParameter(
       String name,
       String group,
-      List<Function<ContextView, ?>> valueSuppliers,
-      Map<String, Object> metadata) {
+      Map<String, @Nullable Object> metadata,
+      List<ExceptionalFunction<Context, ?>> valueSuppliers) {
     this.name = name;
     this.group = group;
+    this.metadata = Map.copyOf(metadata);
     this.valueSuppliers = valueSuppliers;
-    this.metadata.putAll(metadata);
   }
 
   public String getName() {
@@ -43,15 +37,11 @@ public final class TestParameter {
     return group;
   }
 
-  public int getSize() {
-    return valueSuppliers.size();
+  public Map<String, @Nullable Object> getMetadata() {
+    return metadata;
   }
 
-  public Map<String, Object> getMetadata() {
-    return unmodifiableMap(metadata);
-  }
-
-  public TestModifier deparameterize(int index) {
-    return new TestModifier(name, valueSuppliers.get(index), metadata);
+  public List<ExceptionalFunction<Context, ?>> getValueSuppliers() {
+    return valueSuppliers;
   }
 }

@@ -4,5 +4,15 @@
 # Ignore Gradle build output directory
 build
 
+# Ignore Claude
+.claude/
+CLAUDE.md
+
+# Ignore Eclipse project files
+.settings/
+.classpath
+.project
+**/bin
+
 # Ignore IntelliJ files
 .idea

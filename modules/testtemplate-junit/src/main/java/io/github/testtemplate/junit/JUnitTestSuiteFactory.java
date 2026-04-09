@@ -1,14 +1,14 @@
 package io.github.testtemplate.junit;
 
-import io.github.testtemplate.TestSuiteFactory;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 
-import java.util.stream.Stream;
+import io.github.testtemplate.api.suite.TestSuiteFactory;
 
-public class JUnitTestSuiteFactory implements TestSuiteFactory<Stream<DynamicNode>> {
+public final class JUnitTestSuiteFactory implements TestSuiteFactory<Stream<DynamicNode>> {
 
   @Override
   public Stream<DynamicNode> getSuite(Stream<? extends Test> tests) {

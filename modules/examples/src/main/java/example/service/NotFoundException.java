@@ -1,4 +1,3 @@
 package example.service;
 
-public class NotFoundException extends RuntimeException {
-}
+public class NotFoundException extends RuntimeException {}

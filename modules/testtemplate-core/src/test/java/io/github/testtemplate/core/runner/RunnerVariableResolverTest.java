@@ -1,8 +1,12 @@
 package io.github.testtemplate.core.runner;
 
-import io.github.testtemplate.core.TestModifier;
-import io.github.testtemplate.core.TestVariable;
-import io.github.testtemplate.core.runner.RunnerVariableResolver.Listener;
+import static io.github.testtemplate.api.VariableType.MODIFIED;
+import static io.github.testtemplate.api.VariableType.ORIGINAL;
+import static java.util.Collections.emptySet;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Map;
+import java.util.Set;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -10,40 +14,40 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import static io.github.testtemplate.VariableType.MODIFIED;
-import static io.github.testtemplate.VariableType.ORIGINAL;
-import static java.util.Collections.emptySet;
-import static org.assertj.core.api.Assertions.assertThat;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestVariable;
 
 class RunnerVariableResolverTest {
 
+  private final RunnerVariableDescriptor variableDescriptor = new RunnerVariableDescriptor();
+
   @Test
-  void getVariableNamesShouldReturnOnlyVariableNames() {
+  void getVariableNamesShouldReturnMixOfVariablesAndModifiers() {
     var variableResolver = new RunnerVariableResolver(
         Set.of(
-            new TestVariable("greeting", c -> "?"),
-            new TestVariable("first-name", c -> "?"),
-            new TestVariable("last-name", c -> "?")),
+            new TestVariable("greeting", Map.of(), c -> "?"),
+            new TestVariable("first-name", Map.of(), c -> "?"),
+            new TestVariable("last-name", Map.of(), c -> "?")),
         Set.of(
-            new TestModifier("greeting", c -> "?"),
-            new TestModifier("another", c -> "?")));
+            new TestModifier("greeting", Map.of(), c -> "?"),
+            new TestModifier("another", Map.of(), c -> "?")),
+        variableDescriptor);
 
     var names = variableResolver.getVariableNames();
 
-    assertThat(names).containsExactlyInAnyOrder("greeting", "first-name", "last-name");
+    assertThat(names).containsExactlyInAnyOrder("greeting", "first-name", "last-name", "another");
   }
 
   @Test
   void getVariableShouldThrowExceptionWhenVariableIsUndefined() {
-    var variableResolver = new RunnerVariableResolver(emptySet(), emptySet());
+    var variableResolver = new RunnerVariableResolver(emptySet(), emptySet(), variableDescriptor);
     Assertions
         .assertThatThrownBy(() -> variableResolver.getVariable("greeting"))
         .isInstanceOf(TestRunnerException.class)
@@ -53,8 +57,9 @@ class RunnerVariableResolverTest {
   @Test
   void getVariableShouldReturnOriginalValue() {
     var variableResolver = new RunnerVariableResolver(
-        Set.of(new TestVariable("greeting", c -> "welcome")),
-        emptySet());
+        Set.of(new TestVariable("greeting", Map.of(), c -> "welcome")),
+        emptySet(),
+        variableDescriptor);
 
     var variable = variableResolver.getVariable("greeting");
 
@@ -67,8 +72,9 @@ class RunnerVariableResolverTest {
   @Test
   void getVariableShouldReturnOverriddenValue() {
     var variableResolver = new RunnerVariableResolver(
-        Set.of(new TestVariable("greeting", c -> "welcome")),
-        Set.of(new TestModifier("greeting", c -> "hello")));
+        Set.of(new TestVariable("greeting", Map.of(), c -> "welcome")),
+        Set.of(new TestModifier("greeting", Map.of(), c -> "hello")),
+        variableDescriptor);
 
     var variable = variableResolver.getVariable("greeting");
 
@@ -81,57 +87,96 @@ class RunnerVariableResolverTest {
   @Test
   void getVariableShouldReturnModifiedValue() {
     var variableResolver = new RunnerVariableResolver(
-        Set.of(new TestVariable("greeting", c -> "welcome")),
-        Set.of(new TestModifier("greeting", c -> c.get("greeting") + " bob")));
+        Set.of(new TestVariable("greeting", Map.of(), c -> "welcome")),
+        Set.of(new TestModifier("greeting", Map.of(), c -> c.get("greeting") + " Bob")),
+        variableDescriptor);
 
     var variable = variableResolver.getVariable("greeting");
 
     assertThat(variable)
         .hasFieldOrPropertyWithValue("name", "greeting")
         .hasFieldOrPropertyWithValue("type", MODIFIED)
-        .hasFieldOrPropertyWithValue("value", "welcome bob");
+        .hasFieldOrPropertyWithValue("value", "welcome Bob");
   }
 
   @Test
   void getVariableShouldReturnComposedValue() {
     var variableResolver = new RunnerVariableResolver(
         Set.of(
-            new TestVariable("greeting", c -> "welcome"),
-            new TestVariable("name", c -> "bob"),
-            new TestVariable("message", c -> c.get("greeting") + " " + c.get("name"))),
-        emptySet());
+            new TestVariable("greeting", Map.of(), c -> "welcome"),
+            new TestVariable("name", Map.of(), c -> "Bob"),
+            new TestVariable("message", Map.of(), c -> c.get("greeting") + " " + c.get("name"))),
+        emptySet(),
+        variableDescriptor);
 
     var variable = variableResolver.getVariable("message");
 
     assertThat(variable)
         .hasFieldOrPropertyWithValue("name", "message")
         .hasFieldOrPropertyWithValue("type", ORIGINAL)
-        .hasFieldOrPropertyWithValue("value", "welcome bob");
+        .hasFieldOrPropertyWithValue("value", "welcome Bob");
   }
 
   @Test
   void getVariableShouldReturnComposedValueWithOverriddenValue() {
     var variableResolver = new RunnerVariableResolver(
         Set.of(
-            new TestVariable("greeting", c -> "welcome"),
-            new TestVariable("name", c -> "bob"),
-            new TestVariable("message", c -> c.get("greeting") + " " + c.get("name"))),
+            new TestVariable("greeting", Map.of(), c -> "welcome"),
+            new TestVariable("name", Map.of(), c -> "Bob"),
+            new TestVariable("message", Map.of(), c -> c.get("greeting") + " " + c.get("name"))),
         Set.of(
-            new TestModifier("name", c -> "alice")));
+            new TestModifier("name", Map.of(), c -> "Alice")),
+        variableDescriptor);
 
     var variable = variableResolver.getVariable("message");
 
     assertThat(variable)
         .hasFieldOrPropertyWithValue("name", "message")
         .hasFieldOrPropertyWithValue("type", ORIGINAL)
-        .hasFieldOrPropertyWithValue("value", "welcome alice");
+        .hasFieldOrPropertyWithValue("value", "welcome Alice");
+  }
+
+  @Test
+  void getVariableShouldReturnNestedValue() {
+    var variableResolver = new RunnerVariableResolver(
+        Set.of(
+            new TestVariable("greeting", Map.of(), c -> "welcome"),
+            new TestVariable("message", Map.of(), c -> c.get("greeting") + " " + c.given("name").is("Bob"))),
+        emptySet(),
+        variableDescriptor);
+
+    var variable = variableResolver.getVariable("message");
+
+    assertThat(variable)
+        .hasFieldOrPropertyWithValue("name", "message")
+        .hasFieldOrPropertyWithValue("type", ORIGINAL)
+        .hasFieldOrPropertyWithValue("value", "welcome Bob");
+  }
+
+  @Test
+  void getVariableShouldReturnNestedValueWithOverriddenValue() {
+    var variableResolver = new RunnerVariableResolver(
+        Set.of(
+            new TestVariable("greeting", Map.of(), c -> "welcome"),
+            new TestVariable("message", Map.of(), c -> c.get("greeting") + " " + c.given("name").is("Bob"))),
+        Set.of(
+            new TestModifier("name", Map.of(), c -> "Alice")),
+        variableDescriptor);
+
+    var variable = variableResolver.getVariable("message");
+
+    assertThat(variable)
+        .hasFieldOrPropertyWithValue("name", "message")
+        .hasFieldOrPropertyWithValue("type", ORIGINAL)
+        .hasFieldOrPropertyWithValue("value", "welcome Alice");
   }
 
   @Test
   void getVariableShouldReturnMetadata() {
     var variableResolver = new RunnerVariableResolver(
-        Set.of(new TestVariable("greeting", c -> "welcome", Map.of("test-key", "test-value"))),
-        Set.of(new TestModifier("name", c -> "alice", Map.of("other-key", "other-value"))));
+        Set.of(new TestVariable("greeting", Map.of("test-key", "test-value"), c -> "welcome")),
+        Set.of(new TestModifier("name", Map.of("other-key", "other-value"), c -> "Alice")),
+        variableDescriptor);
 
     var var1 = variableResolver.getVariable("greeting");
 
@@ -143,8 +188,25 @@ class RunnerVariableResolverTest {
   }
 
   @Test
+  void getVariableShouldThrowExceptionWhenException() {
+    var variableResolver = new RunnerVariableResolver(
+        Set.of(
+            new TestVariable("greeting", Map.of(), c -> {
+              throw new Exception("catch me");
+            })),
+        emptySet(),
+        variableDescriptor);
+
+    Assertions
+        .assertThatThrownBy(() -> variableResolver.getVariable("greeting").getValue())
+        .isInstanceOf(TestRunnerException.class)
+        .hasMessage("The variable 'greeting' has thrown an exception")
+        .hasRootCauseMessage("catch me");
+  }
+
+  @Test
   void getVariableOrDefaultShouldReturnDefaultValue() {
-    var variableResolver = new RunnerVariableResolver(emptySet(), emptySet());
+    var variableResolver = new RunnerVariableResolver(emptySet(), emptySet(), variableDescriptor);
 
     var variable = variableResolver.getVariableOrDefault("greeting", "welcome");
 
@@ -158,7 +220,8 @@ class RunnerVariableResolverTest {
   void getVariableOrDefaultShouldReturnOverriddenValue() {
     var variableResolver = new RunnerVariableResolver(
         emptySet(),
-        Set.of(new TestModifier("greeting", c -> "hello")));
+        Set.of(new TestModifier("greeting", Map.of(), c -> "hello")),
+        variableDescriptor);
 
     var variable = variableResolver.getVariableOrDefault("greeting", "welcome");
 
@@ -172,21 +235,23 @@ class RunnerVariableResolverTest {
   void getVariableOrDefaultShouldReturnModifiedValue() {
     var variableResolver = new RunnerVariableResolver(
         emptySet(),
-        Set.of(new TestModifier("greeting", c -> c.get("greeting") + " bob")));
+        Set.of(new TestModifier("greeting", Map.of(), c -> c.get("greeting") + " Bob")),
+        variableDescriptor);
 
     var variable = variableResolver.getVariableOrDefault("greeting", "welcome");
 
     assertThat(variable)
         .hasFieldOrPropertyWithValue("name", "greeting")
         .hasFieldOrPropertyWithValue("type", MODIFIED)
-        .hasFieldOrPropertyWithValue("value", "welcome bob");
+        .hasFieldOrPropertyWithValue("value", "welcome Bob");
   }
 
   @Test
   void getVariableOrDefaultShouldThrowExceptionWhenValueAlreadyDefined() {
     var variableResolver = new RunnerVariableResolver(
-        Set.of(new TestVariable("greeting", c -> "hello")),
-        emptySet());
+        Set.of(new TestVariable("greeting", Map.of(), c -> "hello")),
+        emptySet(),
+        variableDescriptor);
 
     Assertions
         .assertThatThrownBy(() -> variableResolver.getVariableOrDefault("greeting", "welcome"))
@@ -195,34 +260,20 @@ class RunnerVariableResolverTest {
   }
 
   @Test
-  void getVariableShouldCallSupplierOnlyOnce() {
-    var number1 = new AtomicInteger(1000);
-    var number2 = new AtomicInteger(2000);
-    var number3 = new AtomicInteger(3000);
-
+  void getVariableOrDefaultShouldThrowExceptionWhenException() {
     var variableResolver = new RunnerVariableResolver(
+        emptySet(),
         Set.of(
-            new TestVariable("number-1", c -> number1.getAndIncrement()),
-            new TestVariable("number-2", c -> { throw new RuntimeException("not reachable"); }),
-            new TestVariable("number-3", c -> number3.getAndIncrement())),
-        Set.of(
-            new TestModifier("number-2", c -> number2.getAndIncrement()),
-            new TestModifier("number-3", c -> c.<Integer>get("number-3") + 1000)));
+            new TestModifier("greeting", Map.of(), c -> {
+              throw new Exception("catch me");
+            })),
+        variableDescriptor);
 
-    // Make few calls
-    variableResolver.getVariable("number-1").getValue();
-    variableResolver.getVariable("number-1").getValue();
-    variableResolver.getVariable("number-1").getValue();
-    variableResolver.getVariable("number-2").getValue();
-    variableResolver.getVariable("number-2").getValue();
-    variableResolver.getVariable("number-2").getValue();
-    variableResolver.getVariable("number-3").getValue();
-    variableResolver.getVariable("number-3").getValue();
-    variableResolver.getVariable("number-3").getValue();
-
-    assertThat(variableResolver.getVariable("number-1").getValue()).isEqualTo(1000);
-    assertThat(variableResolver.getVariable("number-2").getValue()).isEqualTo(2000);
-    assertThat(variableResolver.getVariable("number-3").getValue()).isEqualTo(4000);
+    Assertions
+        .assertThatThrownBy(() -> variableResolver.getVariableOrDefault("greeting", "hello").getValue())
+        .isInstanceOf(TestRunnerException.class)
+        .hasMessage("The variable 'greeting' has thrown an exception")
+        .hasRootCauseMessage("catch me");
   }
 
   @Nested
@@ -230,74 +281,116 @@ class RunnerVariableResolverTest {
   class RegisterListenerTest {
     private final RunnerVariableResolver variableResolver = new RunnerVariableResolver(
         Set.of(
-            new TestVariable("var-1", c -> "val-1"),
-            new TestVariable("var-2", c -> "val-2"),
-            new TestVariable("var-3", c -> "val-3")),
+            new TestVariable("var-1", Map.of(), c -> "val-1"),
+            new TestVariable("var-2", Map.of(), c -> "val-2"),
+            new TestVariable("var-3", Map.of(), c -> "val-3")),
         Set.of(
-            new TestModifier("var-2", c -> "ovr-2"),
-            new TestModifier("var-3", c -> c.get("var-3") + " mod-3"),
-            new TestModifier("var-5", c -> "ovr-5"),
-            new TestModifier("var-6", c -> c.get("var-6") + " mod-6")));
+            new TestModifier("var-2", Map.of(), c -> "ovr-2"),
+            new TestModifier("var-3", Map.of(), c -> c.get("var-3") + " mod-3"),
+            new TestModifier("var-5", Map.of(), c -> "ovr-5"),
+            new TestModifier("var-6", Map.of(), c -> c.get("var-6") + " mod-6")),
+        variableDescriptor);
 
     @Mock
-    private Listener listener;
+    private RunnerVariableResolver.Listener listener;
+
+    @Captor
+    private ArgumentCaptor<Variable> variableCaptor;
 
     @BeforeEach
     void setUp() {
-      variableResolver.registerListener(listener);
+      variableResolver.register(listener);
     }
 
     @AfterEach
     void tearDown() {
-      variableResolver.registerListener(null);
+      variableResolver.register(null);
     }
 
     @Test
     void getVariableShouldInvokedListenerWhenOriginalVariableIsLoaded() {
       variableResolver.getVariable("var-1").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-1"), Mockito.eq(ORIGINAL), Mockito.eq("val-1"), Mockito.anyMap());
+
+      Mockito.verify(listener).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      assertThat(variableCaptor.getValue())
+          .hasFieldOrPropertyWithValue("name", "var-1")
+          .hasFieldOrPropertyWithValue("type", ORIGINAL)
+          .hasFieldOrPropertyWithValue("value", "val-1");
     }
 
     @Test
     void getVariableShouldInvokedListenerWhenOverriddenVariableIsLoaded() {
       variableResolver.getVariable("var-2").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-2"), Mockito.eq(MODIFIED), Mockito.eq("ovr-2"), Mockito.anyMap());
+
+      Mockito.verify(listener).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      assertThat(variableCaptor.getValue())
+          .hasFieldOrPropertyWithValue("name", "var-2")
+          .hasFieldOrPropertyWithValue("type", MODIFIED)
+          .hasFieldOrPropertyWithValue("value", "ovr-2");
     }
 
     @Test
     void getVariableShouldInvokedListenerWhenModifiedVariableIsLoaded() {
       variableResolver.getVariable("var-3").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-3"), Mockito.eq(ORIGINAL), Mockito.eq("val-3"), Mockito.anyMap());
-      Mockito
-          .verify(listener)
-          .accept(Mockito.eq("var-3"), Mockito.eq(MODIFIED), Mockito.eq("val-3 mod-3"), Mockito.anyMap());
+
+      Mockito.verify(listener, Mockito.times(2)).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      var values = variableCaptor.getAllValues();
+      assertThat(values)
+          .element(0)
+          .hasFieldOrPropertyWithValue("name", "var-3")
+          .hasFieldOrPropertyWithValue("type", ORIGINAL)
+          .hasFieldOrPropertyWithValue("value", "val-3");
+      assertThat(values)
+          .element(1)
+          .hasFieldOrPropertyWithValue("name", "var-3")
+          .hasFieldOrPropertyWithValue("type", MODIFIED)
+          .hasFieldOrPropertyWithValue("value", "val-3 mod-3");
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenOriginalVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-4", "dft-4").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-4"), Mockito.eq(ORIGINAL), Mockito.eq("dft-4"), Mockito.anyMap());
+
+      Mockito.verify(listener).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      assertThat(variableCaptor.getValue())
+          .hasFieldOrPropertyWithValue("name", "var-4")
+          .hasFieldOrPropertyWithValue("type", ORIGINAL)
+          .hasFieldOrPropertyWithValue("value", "dft-4");
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenOverriddenVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-5", "dft-5").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-5"), Mockito.eq(MODIFIED), Mockito.eq("ovr-5"), Mockito.anyMap());
+
+      Mockito.verify(listener).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      assertThat(variableCaptor.getValue())
+          .hasFieldOrPropertyWithValue("name", "var-5")
+          .hasFieldOrPropertyWithValue("type", MODIFIED)
+          .hasFieldOrPropertyWithValue("value", "ovr-5");
     }
 
     @Test
     void getVariableOrDefaultShouldInvokedListenerWhenModifiedVariableIsLoaded() {
       variableResolver.getVariableOrDefault("var-6", "dft-6").getValue();
-      Mockito.verify(listener).accept(Mockito.eq("var-6"), Mockito.eq(ORIGINAL), Mockito.eq("dft-6"), Mockito.anyMap());
-      Mockito
-          .verify(listener)
-          .accept(Mockito.eq("var-6"), Mockito.eq(MODIFIED), Mockito.eq("dft-6 mod-6"), Mockito.anyMap());
+
+      Mockito.verify(listener, Mockito.times(2)).variable(variableCaptor.capture());
       Mockito.verifyNoMoreInteractions(listener);
+      var values = variableCaptor.getAllValues();
+      assertThat(values)
+          .element(0)
+          .hasFieldOrPropertyWithValue("name", "var-6")
+          .hasFieldOrPropertyWithValue("type", ORIGINAL)
+          .hasFieldOrPropertyWithValue("value", "dft-6");
+      assertThat(values)
+          .element(1)
+          .hasFieldOrPropertyWithValue("name", "var-6")
+          .hasFieldOrPropertyWithValue("type", MODIFIED)
+          .hasFieldOrPropertyWithValue("value", "dft-6 mod-6");
     }
   }
 }

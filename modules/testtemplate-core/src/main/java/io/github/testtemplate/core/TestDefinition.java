@@ -1,114 +1,79 @@
 package io.github.testtemplate.core;
 
-import io.github.testtemplate.ContextualTemplate;
-import io.github.testtemplate.ContextualValidator;
-import io.github.testtemplate.TestType;
-
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.Collections.unmodifiableMap;
+import org.jspecify.annotations.Nullable;
+
+import io.github.testtemplate.api.TestType;
 
 public final class TestDefinition<R> {
 
-  private final String name;
-
   private final TestType type;
 
-  private final ContextualTemplate<R> template;
+  private final String name;
 
-  private final List<TestVariable> variables = new ArrayList<>();
+  private final Map<String, @Nullable Object> metadata;
 
-  private final List<TestModifier> modifiers = new ArrayList<>();
+  private final List<TestVariable> variables;
 
-  private final List<TestParameter> parameters = new ArrayList<>();
+  private final List<TestModifier> modifiers;
 
-  private final ContextualValidator<R> validator;
+  private final List<TestParameter> parameters;
 
-  private final Map<String, Object> attributes = new HashMap<>();
+  private final TestTemplate<R> template;
+
+  private final TestValidator<R> validator;
 
   public TestDefinition(
-      String name,
       TestType type,
-      ContextualTemplate<R> template,
+      String name,
+      Map<String, @Nullable Object> metadata,
       Collection<TestVariable> variables,
       Collection<TestModifier> modifiers,
       Collection<TestParameter> parameters,
-      ContextualValidator<R> validator,
-      Map<String, Object> attributes) {
-    this.name = name;
+      TestTemplate<R> template,
+      TestValidator<R> validator) {
     this.type = type;
+    this.name = name;
+    this.metadata = Map.copyOf(metadata);
+    this.variables = List.copyOf(variables);
+    this.modifiers = List.copyOf(modifiers);
+    this.parameters = List.copyOf(parameters);
     this.template = template;
-    this.variables.addAll(variables);
-    this.modifiers.addAll(modifiers);
-    this.parameters.addAll(parameters);
     this.validator = validator;
-    this.attributes.putAll(attributes);
-  }
-
-  public String getName() {
-    return name;
   }
 
   public TestType getType() {
     return type;
   }
 
-  public ContextualTemplate<R> getTemplate() {
-    return template;
+  public String getName() {
+    return name;
+  }
+
+  public Map<String, @Nullable Object> getMetadata() {
+    return metadata;
   }
 
   public List<TestVariable> getVariables() {
-    return unmodifiableList(variables);
+    return variables;
   }
 
   public List<TestModifier> getModifiers() {
-    return unmodifiableList(modifiers);
+    return modifiers;
   }
 
-  public boolean isParameterized() {
-    return !parameters.isEmpty();
+  public List<TestParameter> getParameters() {
+    return parameters;
   }
 
-  public Stream<TestDefinition<R>> deparameterize() {
-    TestParameter firstParameter = parameters.getFirst();
-    return IntStream
-        .range(0, firstParameter.getSize())
-        .mapToObj(index -> {
-          List<TestModifier> newModifiers = new ArrayList<>(modifiers);
-          List<TestParameter> newParameters = new ArrayList<>(parameters);
-
-          for (var parameter : newParameters) {
-            if (parameter.getGroup().equals(firstParameter.getGroup())) {
-              newModifiers.add(parameter.deparameterize(index));
-            }
-          }
-
-          newParameters.removeIf(p -> p.getGroup().equals(firstParameter.getGroup()));
-
-          return new TestDefinition<>(
-              firstParameter.getName() + " is ${" + firstParameter.getName() + "}",
-              type,
-              template,
-              variables,
-              newModifiers,
-              newParameters,
-              validator,
-              attributes);
-        });
+  public TestTemplate<R> getTemplate() {
+    return template;
   }
 
-  public ContextualValidator<R> getValidator() {
+  public TestValidator<R> getValidator() {
     return validator;
-  }
-
-  public Map<String, Object> getAttributes() {
-    return unmodifiableMap(attributes);
   }
 }

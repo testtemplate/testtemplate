@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @RestController
 public class BookSearchController {
@@ -19,16 +19,16 @@ public class BookSearchController {
   }
 
   @GetMapping("/books")
-  Flux<BookDto> search(@RequestParam(required = false) String text) {
-    return Flux
-        .defer(() -> StringUtils.hasText(text) ? service.search(text) : service.findAll())
-        .map(BookDtoConverter::toDto);
+  List<BookDto> search(@RequestParam(required = false) String text) {
+    if (StringUtils.hasText(text)) {
+      return service.search(text).stream().map(BookDtoConverter::toDto).toList();
+    } else {
+      return service.findAll().stream().map(BookDtoConverter::toDto).toList();
+    }
   }
 
   @GetMapping("/books/{bookId}")
-  Mono<BookDto> read(@PathVariable String bookId) {
-    return service
-        .read(bookId)
-        .map(BookDtoConverter::toDto);
+  BookDto read(@PathVariable String bookId) {
+    return BookDtoConverter.toDto(service.read(bookId));
   }
 }

@@ -1,20 +1,19 @@
 package example.service;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import java.util.List;
 
 public interface BookService {
 
-  Mono<Book> create(Book book);
+  Book create(Book book);
 
-  Mono<Book> read(String id);
+  Book read(String id) throws NotFoundException;
 
-  Mono<Book> update(String id, Book book);
+  Book update(String id, Book book) throws NotFoundException;
 
-  void delete(String id);
+  void delete(String id) throws NotFoundException;
 
-  Flux<Book> findAll();
+  List<Book> findAll();
 
-  Flux<Book> search(String text);
+  List<Book> search(String text);
 
 }

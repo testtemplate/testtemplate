@@ -79,6 +79,21 @@ public final class Book {
     return pageCount;
   }
 
+  @Override
+  public String toString() {
+    return "Book{"
+        + "id='" + id + '\''
+        + ", title='" + title + '\''
+        + ", description='" + description + '\''
+        + ", authorId='" + authorId + '\''
+        + ", authorFirstName='" + authorFirstName + '\''
+        + ", authorLastName='" + authorLastName + '\''
+        + ", publisher='" + publisher + '\''
+        + ", publishedDate=" + publishedDate
+        + ", pageCount=" + pageCount
+        + '}';
+  }
+
   public static Builder builder() {
     return new Builder();
   }

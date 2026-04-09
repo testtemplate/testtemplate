@@ -1,42 +1,61 @@
 package io.github.testtemplate.extension.json;
 
-import io.github.testtemplate.AlternativeTestTemplateExceptBuilder;
-import io.github.testtemplate.AlternativeTestValidatorBuilder;
+import org.jspecify.annotations.Nullable;
 
 import com.jayway.jsonpath.JsonPath;
 
-public final class JsonExtension<S, R>
-    implements AlternativeTestTemplateExceptBuilder.ExtensionFactory<S, R, JsonExtension.JsonExceptBuilder<S, R>> {
+import io.github.testtemplate.api.builder.AlternativeBuilder;
+
+public class JsonExtension<S, R>
+    implements AlternativeBuilder.ExtensionFactory<S, R, JsonAlternativeBuilder<S, R>> {
+
+  @Nullable
+  private static JsonExtension<?, ?> instance;
 
   @Override
-  public JsonExceptBuilder<S, R> getExtension(AlternativeTestTemplateExceptBuilder<S, R> builder, String variable) {
-    return new JsonExceptBuilder<>(builder, variable);
+  public JsonAlternativeBuilder<S, R> getExtension(
+      AlternativeBuilder.ExceptStep.MetadataStep<S, R> builder,
+      String variable) {
+    return new InnerJsonAlternativeBuilder<>(builder, variable);
   }
 
-  public static final class JsonExceptBuilder<S, R> implements AlternativeTestTemplateExceptBuilder.Extension<S, R> {
+  @SuppressWarnings("unchecked")
+  public static <S, R> JsonExtension<S, R> json() {
+    if (instance == null) {
+      instance = new JsonExtension<>();
+    }
 
-    private final AlternativeTestTemplateExceptBuilder<S, R> builder;
+    return (JsonExtension<S, R>) instance;
+  }
+
+  private static final class InnerJsonAlternativeBuilder<S, R> implements JsonAlternativeBuilder<S, R> {
+
+    private final AlternativeBuilder.ExceptStep.MetadataStep<S, R> builder;
 
     private final String variable;
 
-    public JsonExceptBuilder(AlternativeTestTemplateExceptBuilder<S, R> builder, String variable) {
+    private InnerJsonAlternativeBuilder(
+        AlternativeBuilder.ExceptStep.MetadataStep<S, R> builder,
+        String variable) {
       this.builder = builder;
       this.variable = variable;
     }
 
-    public JsonExceptPathBuilder path(String path) {
-      return new JsonExceptPathBuilder(path);
+    @Override
+    public ValueStep<S, R> path(String path) {
+      return new InnerValueStep(path);
     }
 
-    public final class JsonExceptPathBuilder {
+    private final class InnerValueStep implements ValueStep<S, R> {
 
       private final String path;
 
-      public JsonExceptPathBuilder(String path) {
+      private InnerValueStep(String path) {
         this.path = path;
       }
 
-      public AlternativeTestValidatorBuilder<S, R> is(Object value) {
+      @Override
+      public AlternativeBuilder.ExceptStep<S, R> is(@Nullable Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -47,7 +66,8 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidatorBuilder<S, R> isAbsent() {
+      @Override
+      public AlternativeBuilder.ExceptStep<S, R> isAbsent() {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -58,7 +78,8 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidatorBuilder<S, R> hasExtra(Object value) {
+      @Override
+      public AlternativeBuilder.ExceptStep<S, R> hasExtra(@Nullable Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {
@@ -69,7 +90,8 @@ public final class JsonExtension<S, R>
         });
       }
 
-      public AlternativeTestValidatorBuilder<S, R> hasExtra(String key, Object value) {
+      @Override
+      public AlternativeBuilder.ExceptStep<S, R> hasExtra(String key, @Nullable Object value) {
         return builder.is(c -> {
           var originalValue = c.get(variable);
           if (originalValue instanceof String) {

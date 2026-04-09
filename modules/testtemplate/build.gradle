@@ -1,20 +1,25 @@
 plugins {
-  id 'java-common-conventions'
-  id 'maven-publish-conventions'
+  id('java-common-conventions')
+  id('maven-publish-conventions')
 }
-
-description = 'A fluent builder to write a suite of test from a default one and its alternatives'
 
 dependencies {
   api project(':testtemplate-api')
 
   implementation project(':testtemplate-core')
   implementation project(':testtemplate-junit')
+
+  implementation libs.yaml
+
   compileOnly project(':testtemplate-extension-json')
   compileOnly project(':testtemplate-extension-mockito')
 
+  compileOnly libs.jspecify
+
   testImplementation libs.assertj
   testImplementation libs.junit
+
+  testCompileOnly libs.jspecify
 
   testRuntimeOnly libs.junit.runtime
 }
