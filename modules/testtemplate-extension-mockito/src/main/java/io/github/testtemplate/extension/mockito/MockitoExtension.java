@@ -1,17 +1,5 @@
 package io.github.testtemplate.extension.mockito;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jspecify.annotations.Nullable;
-import org.mockito.Mockito;
-import org.mockito.internal.stubbing.answers.Returns;
-import org.mockito.internal.stubbing.answers.ThrowsException;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
-
 import io.github.testtemplate.api.Context;
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.ContextResult;
@@ -21,6 +9,18 @@ import io.github.testtemplate.api.builder.SetupBuilder;
 import io.github.testtemplate.api.function.ExceptionalBiFunction;
 import io.github.testtemplate.api.function.ExceptionalConsumer;
 import io.github.testtemplate.api.function.ExceptionalFunction;
+
+import org.jspecify.annotations.Nullable;
+import org.mockito.Mockito;
+import org.mockito.internal.stubbing.answers.Returns;
+import org.mockito.internal.stubbing.answers.ThrowsException;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public final class MockitoExtension<S, R> implements
     DefaultBuilder.ExtensionFactory<S, MockitoDefaultBuilder<S>>,

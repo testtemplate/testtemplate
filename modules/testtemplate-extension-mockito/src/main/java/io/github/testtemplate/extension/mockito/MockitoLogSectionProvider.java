@@ -1,14 +1,14 @@
 package io.github.testtemplate.extension.mockito;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import io.github.testtemplate.api.logger.TestLogSectionProvider;
+import io.github.testtemplate.api.logger.TestLogSnapshot;
 
 import org.mockito.Mockito;
 import org.mockito.stubbing.Stubbing;
 
-import io.github.testtemplate.api.logger.TestLogSectionProvider;
-import io.github.testtemplate.api.logger.TestLogSnapshot;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public final class MockitoLogSectionProvider implements TestLogSectionProvider {
 

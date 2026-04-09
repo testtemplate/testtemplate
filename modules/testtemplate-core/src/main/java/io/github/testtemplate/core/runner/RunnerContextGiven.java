@@ -1,8 +1,8 @@
 package io.github.testtemplate.core.runner;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.ContextGiven;
+
+import org.jspecify.annotations.Nullable;
 
 final class RunnerContextGiven extends AbstractRunnerContext implements ContextGiven {
 

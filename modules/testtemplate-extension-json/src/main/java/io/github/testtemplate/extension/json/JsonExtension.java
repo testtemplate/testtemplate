@@ -1,10 +1,9 @@
 package io.github.testtemplate.extension.json;
 
-import org.jspecify.annotations.Nullable;
+import io.github.testtemplate.api.builder.AlternativeBuilder;
 
 import com.jayway.jsonpath.JsonPath;
-
-import io.github.testtemplate.api.builder.AlternativeBuilder;
+import org.jspecify.annotations.Nullable;
 
 public class JsonExtension<S, R>
     implements AlternativeBuilder.ExtensionFactory<S, R, JsonAlternativeBuilder<S, R>> {

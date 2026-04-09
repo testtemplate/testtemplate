@@ -1,9 +1,9 @@
 package io.github.testtemplate.core;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.ContextResult;
 import io.github.testtemplate.api.function.ExceptionalConsumer;
+
+import org.jspecify.annotations.Nullable;
 
 public final class TestValidator<R> {
 

@@ -1,11 +1,11 @@
 package io.github.testtemplate.core.runner;
 
-import java.util.function.Supplier;
+import io.github.testtemplate.api.ContextResult;
 
 import org.jspecify.annotations.Nullable;
 import org.opentest4j.AssertionFailedError;
 
-import io.github.testtemplate.api.ContextResult;
+import java.util.function.Supplier;
 
 final class RunnerContextResult<R> extends AbstractRunnerContext implements ContextResult<R> {
 

@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.runner.listener;
 
-import java.util.Objects;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Test;
 import io.github.testtemplate.api.Variable;
 import io.github.testtemplate.core.logger.TestLogger;
 import io.github.testtemplate.core.runner.RunnerTestInstantiator;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 public class LoggerListener implements RunnerTestInstantiator.Listener {
 

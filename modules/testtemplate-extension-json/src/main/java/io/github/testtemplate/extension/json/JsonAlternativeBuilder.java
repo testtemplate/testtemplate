@@ -1,8 +1,8 @@
 package io.github.testtemplate.extension.json;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.builder.AlternativeBuilder;
+
+import org.jspecify.annotations.Nullable;
 
 public interface JsonAlternativeBuilder<S, R> extends AlternativeBuilder.Extension<S, R> {
 

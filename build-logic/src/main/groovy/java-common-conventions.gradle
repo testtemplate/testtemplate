@@ -7,9 +7,9 @@ plugins {
 
 group = 'io.github.testtemplate'
 
-//repositories {
-//  mavenCentral()
-//}
+repositories {
+  mavenCentral()
+}
 
 java {
   toolchain {

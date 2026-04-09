@@ -1,14 +1,14 @@
 package io.github.testtemplate.api.builder;
 
-import java.util.Objects;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.ContextResult;
 import io.github.testtemplate.api.function.ExceptionalConsumer;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.Objects;
 
 public interface DefaultBuilder<S> {
 

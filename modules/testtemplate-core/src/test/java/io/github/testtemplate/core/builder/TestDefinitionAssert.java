@@ -1,11 +1,11 @@
 package io.github.testtemplate.core.builder;
 
+import io.github.testtemplate.api.TestType;
+import io.github.testtemplate.core.TestDefinition;
+
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.Nullable;
-
-import io.github.testtemplate.api.TestType;
-import io.github.testtemplate.core.TestDefinition;
 
 public class TestDefinitionAssert extends AbstractAssert<TestDefinitionAssert, TestDefinition<?>> {
 

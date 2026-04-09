@@ -1,12 +1,12 @@
 package io.github.testtemplate.extension.mockito;
 
-import org.mockito.invocation.InvocationOnMock;
-
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.builder.SetupBuilder;
 import io.github.testtemplate.api.function.ExceptionalBiFunction;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.mockito.invocation.InvocationOnMock;
 
 public interface MockitoSetupBuilder extends SetupBuilder.Extension {
 

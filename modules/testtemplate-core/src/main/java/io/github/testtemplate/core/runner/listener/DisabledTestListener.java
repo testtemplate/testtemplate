@@ -1,14 +1,14 @@
 package io.github.testtemplate.core.runner.listener;
 
-import static java.lang.Boolean.TRUE;
-
-import org.jspecify.annotations.Nullable;
-import org.opentest4j.TestAbortedException;
-
 import io.github.testtemplate.api.Test;
 import io.github.testtemplate.api.Variable;
 import io.github.testtemplate.api.builder.Metadata;
 import io.github.testtemplate.core.runner.RunnerTestInstantiator;
+
+import org.jspecify.annotations.Nullable;
+import org.opentest4j.TestAbortedException;
+
+import static java.lang.Boolean.TRUE;
 
 public class DisabledTestListener implements RunnerTestInstantiator.Listener {
 

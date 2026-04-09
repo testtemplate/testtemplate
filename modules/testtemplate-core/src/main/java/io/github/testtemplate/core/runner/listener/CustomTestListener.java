@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.runner.listener;
 
-import java.util.ServiceLoader;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Test;
 import io.github.testtemplate.api.Variable;
 import io.github.testtemplate.api.listener.TestListener;
 import io.github.testtemplate.core.runner.RunnerTestInstantiator;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.ServiceLoader;
 
 public class CustomTestListener implements RunnerTestInstantiator.Listener {
 

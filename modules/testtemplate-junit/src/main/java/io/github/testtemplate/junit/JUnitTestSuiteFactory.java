@@ -1,12 +1,12 @@
 package io.github.testtemplate.junit;
 
-import java.util.stream.Stream;
+import io.github.testtemplate.api.suite.TestSuiteFactory;
 
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 
-import io.github.testtemplate.api.suite.TestSuiteFactory;
+import java.util.stream.Stream;
 
 public final class JUnitTestSuiteFactory implements TestSuiteFactory<Stream<DynamicNode>> {
 

@@ -1,10 +1,10 @@
 package io.github.testtemplate.core.runner.descriptor;
 
-import java.util.Objects;
+import io.github.testtemplate.api.ValueDescriptor;
 
 import org.jspecify.annotations.Nullable;
 
-import io.github.testtemplate.api.ValueDescriptor;
+import java.util.Objects;
 
 public class ObjectDescriptor implements ValueDescriptor {
 

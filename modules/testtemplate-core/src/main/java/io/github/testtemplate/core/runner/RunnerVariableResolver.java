@@ -1,12 +1,5 @@
 package io.github.testtemplate.core.runner;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Context;
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.Variable;
@@ -14,6 +7,13 @@ import io.github.testtemplate.api.VariableType;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.core.TestModifier;
 import io.github.testtemplate.core.TestVariable;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 final class RunnerVariableResolver {
 

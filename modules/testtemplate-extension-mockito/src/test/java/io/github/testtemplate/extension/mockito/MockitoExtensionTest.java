@@ -1,7 +1,8 @@
 package io.github.testtemplate.extension.mockito;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.verify;
+import io.github.testtemplate.api.ContextGiven;
+import io.github.testtemplate.api.builder.DefaultBuilder;
+import io.github.testtemplate.api.function.ExceptionalFunction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -12,9 +13,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import io.github.testtemplate.api.ContextGiven;
-import io.github.testtemplate.api.builder.DefaultBuilder;
-import io.github.testtemplate.api.function.ExceptionalFunction;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
 class MockitoExtensionTest {

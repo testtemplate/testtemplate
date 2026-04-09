@@ -1,9 +1,9 @@
 package io.github.testtemplate.api.config;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Collections;
 import java.util.Map;
-
-import org.jspecify.annotations.Nullable;
 
 public final class TestConfiguration implements Configuration {
 
@@ -23,8 +23,7 @@ public final class TestConfiguration implements Configuration {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T> T getOrDefault(final String key, final T defaultValue)
-  {
+  public <T> T getOrDefault(final String key, final T defaultValue) {
     return (T) properties.getOrDefault(key, defaultValue);
   }
 }

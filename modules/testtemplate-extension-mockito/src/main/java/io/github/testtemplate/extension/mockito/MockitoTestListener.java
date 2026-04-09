@@ -1,13 +1,13 @@
 package io.github.testtemplate.extension.mockito;
 
-import static java.lang.Boolean.TRUE;
-import static org.slf4j.LoggerFactory.getLogger;
+import io.github.testtemplate.api.Test;
+import io.github.testtemplate.api.listener.TestListener;
 
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import io.github.testtemplate.api.Test;
-import io.github.testtemplate.api.listener.TestListener;
+import static java.lang.Boolean.TRUE;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class MockitoTestListener implements TestListener {
 

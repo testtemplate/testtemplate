@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.runner;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Variable;
 import io.github.testtemplate.api.VariableType;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 final class RunnerVariable implements Variable {
 

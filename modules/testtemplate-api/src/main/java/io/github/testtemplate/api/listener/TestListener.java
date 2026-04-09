@@ -1,9 +1,9 @@
 package io.github.testtemplate.api.listener;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Test;
 import io.github.testtemplate.api.Variable;
+
+import org.jspecify.annotations.Nullable;
 
 public interface TestListener {
 

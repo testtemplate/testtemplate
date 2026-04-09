@@ -1,6 +1,12 @@
 package io.github.testtemplate.core.logger;
 
-import static org.slf4j.LoggerFactory.getLogger;
+import io.github.testtemplate.api.Test;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.api.logger.TestLogSectionProvider;
+import io.github.testtemplate.api.logger.TestLogSnapshot;
+
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,13 +19,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
-import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-
-import io.github.testtemplate.api.Test;
-import io.github.testtemplate.api.Variable;
-import io.github.testtemplate.api.logger.TestLogSectionProvider;
-import io.github.testtemplate.api.logger.TestLogSnapshot;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class TestLogger implements TestLogSnapshot {
 

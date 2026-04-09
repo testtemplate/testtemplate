@@ -1,11 +1,11 @@
 package io.github.testtemplate.core;
 
-import java.util.Map;
+import io.github.testtemplate.api.Context;
+import io.github.testtemplate.api.function.ExceptionalFunction;
 
 import org.jspecify.annotations.Nullable;
 
-import io.github.testtemplate.api.Context;
-import io.github.testtemplate.api.function.ExceptionalFunction;
+import java.util.Map;
 
 public final class TestModifier {
 

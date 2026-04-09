@@ -1,8 +1,11 @@
 package io.github.testtemplate.core.logger;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import io.github.testtemplate.api.Test;
+import io.github.testtemplate.api.TestType;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.api.VariableType;
+import io.github.testtemplate.api.logger.TestLogSectionProvider;
+import io.github.testtemplate.api.logger.TestLogSnapshot;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -11,12 +14,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.github.testtemplate.api.Test;
-import io.github.testtemplate.api.TestType;
-import io.github.testtemplate.api.Variable;
-import io.github.testtemplate.api.VariableType;
-import io.github.testtemplate.api.logger.TestLogSectionProvider;
-import io.github.testtemplate.api.logger.TestLogSnapshot;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class TestLoggerTest {

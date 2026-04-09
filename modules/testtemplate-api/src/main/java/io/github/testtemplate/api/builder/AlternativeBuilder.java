@@ -1,15 +1,15 @@
 package io.github.testtemplate.api.builder;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Context;
 import io.github.testtemplate.api.ContextResult;
 import io.github.testtemplate.api.function.ExceptionalConsumer;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
 
 public interface AlternativeBuilder<S, R> extends SuiteBuilder<S> {
 

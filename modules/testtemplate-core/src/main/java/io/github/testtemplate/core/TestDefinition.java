@@ -1,12 +1,12 @@
 package io.github.testtemplate.core;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import io.github.testtemplate.api.TestType;
 
 import org.jspecify.annotations.Nullable;
 
-import io.github.testtemplate.api.TestType;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 public final class TestDefinition<R> {
 

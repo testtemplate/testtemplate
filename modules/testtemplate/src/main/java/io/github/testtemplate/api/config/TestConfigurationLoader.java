@@ -1,10 +1,10 @@
 package io.github.testtemplate.api.config;
 
-import java.io.InputStream;
-import java.util.Map;
-
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.error.YAMLException;
+
+import java.io.InputStream;
+import java.util.Map;
 
 public final class TestConfigurationLoader {
 

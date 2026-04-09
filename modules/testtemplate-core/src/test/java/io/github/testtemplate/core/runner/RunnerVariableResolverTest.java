@@ -1,12 +1,8 @@
 package io.github.testtemplate.core.runner;
 
-import static io.github.testtemplate.api.VariableType.MODIFIED;
-import static io.github.testtemplate.api.VariableType.ORIGINAL;
-import static java.util.Collections.emptySet;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Map;
-import java.util.Set;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.core.TestModifier;
+import io.github.testtemplate.core.TestVariable;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -20,9 +16,13 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.github.testtemplate.api.Variable;
-import io.github.testtemplate.core.TestModifier;
-import io.github.testtemplate.core.TestVariable;
+import java.util.Map;
+import java.util.Set;
+
+import static io.github.testtemplate.api.VariableType.MODIFIED;
+import static io.github.testtemplate.api.VariableType.ORIGINAL;
+import static java.util.Collections.emptySet;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class RunnerVariableResolverTest {
 

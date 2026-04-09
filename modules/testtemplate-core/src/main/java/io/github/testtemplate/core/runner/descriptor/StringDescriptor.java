@@ -1,12 +1,12 @@
 package io.github.testtemplate.core.runner.descriptor;
 
-import java.util.Objects;
+import io.github.testtemplate.api.ValueDescriptor;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.testtemplate.api.ValueDescriptor;
+import java.util.Objects;
 
 public class StringDescriptor implements ValueDescriptor {
 

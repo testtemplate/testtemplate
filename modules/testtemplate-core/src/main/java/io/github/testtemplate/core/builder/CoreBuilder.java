@@ -1,16 +1,5 @@
 package io.github.testtemplate.core.builder;
 
-import static java.lang.String.join;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Context;
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.ContextResult;
@@ -28,6 +17,17 @@ import io.github.testtemplate.core.TestParameter;
 import io.github.testtemplate.core.TestTemplate;
 import io.github.testtemplate.core.TestValidator;
 import io.github.testtemplate.core.TestVariable;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.lang.String.join;
 
 public final class CoreBuilder {
 

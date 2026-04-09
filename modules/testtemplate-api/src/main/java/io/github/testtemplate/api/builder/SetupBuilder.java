@@ -1,10 +1,10 @@
 package io.github.testtemplate.api.builder;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.jspecify.annotations.Nullable;
 
 public interface SetupBuilder {
 

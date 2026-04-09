@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.runner;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.Test;
 import io.github.testtemplate.api.TestType;
 import io.github.testtemplate.api.Variable;
+
+import org.jspecify.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 final class RunnerTest implements Test {
 

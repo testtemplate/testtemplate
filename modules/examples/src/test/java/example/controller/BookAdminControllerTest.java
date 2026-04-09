@@ -1,11 +1,8 @@
 package example.controller;
 
-import static io.github.testtemplate.TestBuilder.json;
-import static io.github.testtemplate.TestBuilder.mock;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.json.JsonCompareMode.STRICT;
-
-import java.util.stream.Stream;
+import example.service.Book;
+import example.service.BookService;
+import io.github.testtemplate.TestBuilder;
 
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
@@ -16,9 +13,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.client.RestTestClient;
 
-import example.service.Book;
-import example.service.BookService;
-import io.github.testtemplate.TestBuilder;
+import java.util.stream.Stream;
+
+import static io.github.testtemplate.TestBuilder.json;
+import static io.github.testtemplate.TestBuilder.mock;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.json.JsonCompareMode.STRICT;
 
 @WebMvcTest(controllers = BookAdminController.class)
 @AutoConfigureRestTestClient

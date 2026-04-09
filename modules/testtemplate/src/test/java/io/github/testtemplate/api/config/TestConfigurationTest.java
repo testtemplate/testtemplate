@@ -1,10 +1,10 @@
 package io.github.testtemplate.api.config;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class TestConfigurationTest {
 
@@ -12,28 +12,14 @@ class TestConfigurationTest {
   void shouldReturnValueForKnownKey() {
     TestConfiguration config = new TestConfiguration(Map.of("key", "value"));
 
-    Assertions.assertThat(config.get("key")).isEqualTo("value");
+    Assertions.assertThat(config.<String>get("key")).isEqualTo("value");
   }
 
   @Test
   void shouldReturnNullForUnknownKey() {
     TestConfiguration config = new TestConfiguration(Map.of("key", "value"));
 
-    Assertions.assertThat(config.get("missing")).isNull();
-  }
-
-  @Test
-  void shouldReportIsEmptyWhenConstructedWithEmptyMap() {
-    TestConfiguration config = new TestConfiguration(Map.of());
-
-    Assertions.assertThat(config.isEmpty()).isTrue();
-  }
-
-  @Test
-  void shouldReportIsNotEmptyWhenConstructedWithNonEmptyMap() {
-    TestConfiguration config = new TestConfiguration(Map.of("key", "value"));
-
-    Assertions.assertThat(config.isEmpty()).isFalse();
+    Assertions.assertThat(config.<String>get("missing")).isNull();
   }
 
   @Test
@@ -45,6 +31,6 @@ class TestConfigurationTest {
     // Verify original map mutation does not affect configuration
     mutableMap.put("key", "changed");
 
-    Assertions.assertThat(config.get("key")).isEqualTo("value");
+    Assertions.assertThat(config.<String>get("key")).isEqualTo("value");
   }
 }

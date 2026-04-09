@@ -1,6 +1,7 @@
 package io.github.testtemplate.extension.mockito;
 
-import java.util.Map;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.api.logger.TestLogSnapshot;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -10,8 +11,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.github.testtemplate.api.Variable;
-import io.github.testtemplate.api.logger.TestLogSnapshot;
+import java.util.Map;
 
 @ExtendWith(MockitoExtension.class)
 class MockitoLogSectionProviderTest {

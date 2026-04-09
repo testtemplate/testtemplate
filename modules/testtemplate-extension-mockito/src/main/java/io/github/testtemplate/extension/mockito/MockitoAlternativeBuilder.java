@@ -1,12 +1,12 @@
 package io.github.testtemplate.extension.mockito;
 
-import org.mockito.invocation.InvocationOnMock;
-
 import io.github.testtemplate.api.Context;
 import io.github.testtemplate.api.builder.AlternativeBuilder;
 import io.github.testtemplate.api.function.ExceptionalBiFunction;
 import io.github.testtemplate.api.function.ExceptionalFunction;
 import io.github.testtemplate.api.function.ExceptionalSupplier;
+
+import org.mockito.invocation.InvocationOnMock;
 
 public interface MockitoAlternativeBuilder<S, R> extends AlternativeBuilder.Extension<S, R> {
 

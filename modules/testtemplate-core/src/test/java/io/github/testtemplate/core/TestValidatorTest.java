@@ -1,10 +1,10 @@
 package io.github.testtemplate.core;
 
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import io.github.testtemplate.api.ContextResult;
 import io.github.testtemplate.api.function.ExceptionalConsumer;
+
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 class TestValidatorTest {
 

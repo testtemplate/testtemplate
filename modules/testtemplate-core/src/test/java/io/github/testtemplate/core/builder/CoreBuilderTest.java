@@ -1,15 +1,15 @@
 package io.github.testtemplate.core.builder;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import io.github.testtemplate.api.suite.TestSuiteFactory;
+import io.github.testtemplate.core.TestDefinition;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import io.github.testtemplate.api.suite.TestSuiteFactory;
-import io.github.testtemplate.core.TestDefinition;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 class CoreBuilderTest {
 

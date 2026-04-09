@@ -1,8 +1,5 @@
 package io.github.testtemplate.core.runner;
 
-import static io.github.testtemplate.api.VariableType.MODIFIED;
-import static io.github.testtemplate.api.VariableType.ORIGINAL;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,6 +8,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.opentest4j.AssertionFailedError;
+
+import static io.github.testtemplate.api.VariableType.MODIFIED;
+import static io.github.testtemplate.api.VariableType.ORIGINAL;
 
 @ExtendWith(MockitoExtension.class)
 class TestRunnerTest {

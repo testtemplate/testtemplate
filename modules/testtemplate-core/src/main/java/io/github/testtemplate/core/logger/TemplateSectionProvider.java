@@ -1,9 +1,9 @@
 package io.github.testtemplate.core.logger;
 
-import java.util.List;
-
 import io.github.testtemplate.api.logger.TestLogSectionProvider;
 import io.github.testtemplate.api.logger.TestLogSnapshot;
+
+import java.util.List;
 
 class TemplateSectionProvider implements TestLogSectionProvider {
 

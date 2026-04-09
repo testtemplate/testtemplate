@@ -1,8 +1,9 @@
 package io.github.testtemplate.core.runner;
 
-import static io.github.testtemplate.core.runner.RunnerTestInstantiator.RUNNER_METADATA_INDEXES;
-import static io.github.testtemplate.core.runner.RunnerTestInstantiator.RUNNER_METADATA_LEVEL;
-import static io.github.testtemplate.core.runner.RunnerTestInstantiator.VARIABLE_METADATA_LEVEL;
+import io.github.testtemplate.api.Variable;
+import io.github.testtemplate.api.VariableType;
+
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,10 +13,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.jspecify.annotations.Nullable;
-
-import io.github.testtemplate.api.Variable;
-import io.github.testtemplate.api.VariableType;
+import static io.github.testtemplate.core.runner.RunnerTestInstantiator.RUNNER_METADATA_INDEXES;
+import static io.github.testtemplate.core.runner.RunnerTestInstantiator.RUNNER_METADATA_LEVEL;
+import static io.github.testtemplate.core.runner.RunnerTestInstantiator.VARIABLE_METADATA_LEVEL;
 
 abstract class AbstractTestNameSubstitutor {
 

@@ -1,13 +1,13 @@
 package io.github.testtemplate.core.logger;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import io.github.testtemplate.api.Variable;
 import io.github.testtemplate.api.VariableType;
 import io.github.testtemplate.api.logger.TestLogSectionProvider;
 import io.github.testtemplate.api.logger.TestLogSnapshot;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 class VariablesSectionProvider implements TestLogSectionProvider {
 

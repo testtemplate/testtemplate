@@ -1,4 +1,8 @@
-package io.github.testtemplate;
+package io.github.testtemplate.api.builder;
+
+import io.github.testtemplate.api.ContextGiven;
+import io.github.testtemplate.api.function.ExceptionalFunction;
+import io.github.testtemplate.api.function.ExceptionalSupplier;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -10,44 +14,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import io.github.testtemplate.api.ContextGiven;
-import io.github.testtemplate.api.function.ExceptionalFunction;
-import io.github.testtemplate.api.function.ExceptionalSupplier;
-
 @ExtendWith(MockitoExtension.class)
-class DefaultBuilderTest {
-
-  @Nested
-  class TestMetadataStepTest {
-
-    @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private DefaultBuilder.TestMetadataStep<Object> step;
-
-    @Test
-    void shouldCallDisabledWithUnknownReasonWhenNoReasonProvided() {
-      Mockito.doReturn(step).when(step).metadata(Mockito.anyString(), Mockito.any());
-
-      step.disabled();
-
-      Mockito.verify(step).disabled("unknown reason");
-    }
-
-    @Test
-    void shouldSetDisabledAndReasonMetadataWhenReasonProvided() {
-      Mockito.doReturn(step).when(step).metadata(Mockito.anyString(), Mockito.any());
-
-      step.disabled("some reason");
-
-      Mockito.verify(step).metadata(Metadata.Test.DISABLED, true);
-      Mockito.verify(step).metadata(Metadata.Test.DISABLED_REASON, "some reason");
-    }
-  }
+class SetupBuilderTest {
 
   @Nested
   class MetadataStepTest {
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private DefaultBuilder.GivenStep.MetadataStep<Object> step;
+    private SetupBuilder.MetadataStep step;
 
     @Test
     void shouldSetPreloadMetadataWhenPreloadCalled() {
@@ -63,7 +37,7 @@ class DefaultBuilderTest {
   class ValueStepTest {
 
     @Mock(answer = Answers.CALLS_REAL_METHODS)
-    private DefaultBuilder.GivenStep.ValueStep<Object> step;
+    private SetupBuilder.ValueStep step;
 
     @Test
     void shouldWrapSupplierInFunctionWhenSupplierProvided() throws Exception {

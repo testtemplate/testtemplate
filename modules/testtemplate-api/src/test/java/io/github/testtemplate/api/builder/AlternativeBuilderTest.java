@@ -1,4 +1,8 @@
-package io.github.testtemplate;
+package io.github.testtemplate.api.builder;
+
+import io.github.testtemplate.api.Context;
+import io.github.testtemplate.api.function.ExceptionalFunction;
+import io.github.testtemplate.api.function.ExceptionalSupplier;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
@@ -9,10 +13,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import io.github.testtemplate.api.Context;
-import io.github.testtemplate.api.function.ExceptionalFunction;
-import io.github.testtemplate.api.function.ExceptionalSupplier;
 
 @ExtendWith(MockitoExtension.class)
 class AlternativeBuilderTest {

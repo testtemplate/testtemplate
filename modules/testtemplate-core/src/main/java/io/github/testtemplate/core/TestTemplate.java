@@ -1,9 +1,9 @@
 package io.github.testtemplate.core;
 
-import org.jspecify.annotations.Nullable;
-
 import io.github.testtemplate.api.ContextGiven;
 import io.github.testtemplate.api.function.ExceptionalFunction;
+
+import org.jspecify.annotations.Nullable;
 
 public final class TestTemplate<R> {
 

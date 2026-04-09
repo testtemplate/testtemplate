@@ -8,6 +8,7 @@ import io.github.testtemplate.core.runner.RunnerTestInstantiator;
 import io.github.testtemplate.extension.json.JsonExtension;
 import io.github.testtemplate.extension.mockito.MockitoExtension;
 import io.github.testtemplate.junit.JUnitTestSuiteFactory;
+
 import org.junit.jupiter.api.DynamicNode;
 
 import java.util.stream.Stream;

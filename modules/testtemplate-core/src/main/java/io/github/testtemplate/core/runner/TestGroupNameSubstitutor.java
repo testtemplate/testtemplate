@@ -1,8 +1,8 @@
 package io.github.testtemplate.core.runner;
 
-import java.util.Map;
-
 import org.jspecify.annotations.Nullable;
+
+import java.util.Map;
 
 final class TestGroupNameSubstitutor extends AbstractTestNameSubstitutor {
 

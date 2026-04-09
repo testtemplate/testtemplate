@@ -1,12 +1,12 @@
 package io.github.testtemplate.core.logger;
 
+import io.github.testtemplate.api.logger.TestLogSectionProvider;
+import io.github.testtemplate.api.logger.TestLogSnapshot;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.github.testtemplate.api.logger.TestLogSectionProvider;
-import io.github.testtemplate.api.logger.TestLogSnapshot;
 
 class ResultSectionProvider implements TestLogSectionProvider {
 

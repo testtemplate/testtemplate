@@ -1,14 +1,14 @@
 package example.utils;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.stream.Stream;
+import io.github.testtemplate.TestBuilder;
+import io.github.testtemplate.api.builder.SetupBuilder;
 
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 
-import io.github.testtemplate.TestBuilder;
-import io.github.testtemplate.api.builder.SetupBuilder;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PersonNameUtilsTest {
 

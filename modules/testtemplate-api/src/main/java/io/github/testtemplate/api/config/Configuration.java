@@ -2,8 +2,7 @@ package io.github.testtemplate.api.config;
 
 import org.jspecify.annotations.Nullable;
 
-public interface Configuration
-{
+public interface Configuration {
 
   @Nullable <T> T get(String key);
 
