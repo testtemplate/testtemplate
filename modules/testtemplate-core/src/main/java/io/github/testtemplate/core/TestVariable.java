@@ -1,41 +1,38 @@
 package io.github.testtemplate.core;
 
-import io.github.testtemplate.Context;
+import io.github.testtemplate.api.ContextGiven;
+import io.github.testtemplate.api.function.ExceptionalFunction;
 
-import java.util.HashMap;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Map;
-import java.util.function.Function;
-
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableMap;
 
 public final class TestVariable {
 
   private final String name;
 
-  private final Function<Context, ?> valueSupplier;
+  private final Map<String, @Nullable Object> metadata;
 
-  private final Map<String, Object> metadata = new HashMap<>();
+  private final ExceptionalFunction<ContextGiven, ?> valueSupplier;
 
-  public TestVariable(String name, Function<Context, ?> valueSupplier) {
-    this(name, valueSupplier, emptyMap());
-  }
-
-  public TestVariable(String name, Function<Context, ?> valueSupplier, Map<String, Object> metadata) {
+  public TestVariable(
+      String name,
+      Map<String, @Nullable Object> metadata,
+      ExceptionalFunction<ContextGiven, ?> valueSupplier) {
     this.name = name;
+    this.metadata = Map.copyOf(metadata);
     this.valueSupplier = valueSupplier;
-    this.metadata.putAll(metadata);
   }
 
   public String getName() {
     return name;
   }
 
-  public Function<Context, ?> getValueSupplier() {
-    return valueSupplier;
+  public Map<String, @Nullable Object> getMetadata() {
+    return metadata;
   }
 
-  public Map<String, Object> getMetadata() {
-    return unmodifiableMap(metadata);
+  public ExceptionalFunction<ContextGiven, ?> getValueSupplier() {
+    return valueSupplier;
   }
 }

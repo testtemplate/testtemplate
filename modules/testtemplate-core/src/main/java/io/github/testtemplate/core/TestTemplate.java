@@ -1,0 +1,28 @@
+package io.github.testtemplate.core;
+
+import io.github.testtemplate.api.ContextGiven;
+import io.github.testtemplate.api.function.ExceptionalFunction;
+
+import org.jspecify.annotations.Nullable;
+
+public final class TestTemplate<R> {
+
+  private final ExceptionalFunction<ContextGiven, R> function;
+
+  @Nullable
+  private final StackTraceElement source;
+
+  public TestTemplate(ExceptionalFunction<ContextGiven, R> function, @Nullable StackTraceElement source) {
+    this.function = function;
+    this.source = source;
+  }
+
+  public ExceptionalFunction<ContextGiven, R> getFunction() {
+    return function;
+  }
+
+  @Nullable
+  public StackTraceElement getSource() {
+    return source;
+  }
+}

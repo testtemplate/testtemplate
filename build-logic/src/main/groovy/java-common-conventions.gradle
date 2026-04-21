@@ -1,6 +1,7 @@
 plugins {
   id 'java-library'
   id 'checkstyle'
+  id 'jacoco'
   id 'org.shipkit.shipkit-auto-version'
 }
 
@@ -22,8 +23,18 @@ test {
   testLogging {
     events = ['FAILED', 'PASSED', 'SKIPPED']
   }
+
+  finalizedBy(jacocoTestReport)
 }
 
 checkstyle {
   toolVersion = libs.versions.checkstyle.get()
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+        csv.required = false
+    }
 }

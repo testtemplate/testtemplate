@@ -1,40 +1,41 @@
 package example.controller;
 
-import io.github.testtemplate.TestTemplate;
-
 import example.service.Book;
 import example.service.BookService;
+import io.github.testtemplate.TestBuilder;
+
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Mono;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.util.stream.Stream;
 
-import static io.github.testtemplate.TestTemplate.json;
-import static io.github.testtemplate.TestTemplate.mock;
+import static io.github.testtemplate.TestBuilder.json;
+import static io.github.testtemplate.TestBuilder.mock;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.json.JsonCompareMode.STRICT;
 
-@WebFluxTest(controllers = BookAdminController.class)
+@WebMvcTest(controllers = BookAdminController.class)
+@AutoConfigureRestTestClient
 class BookAdminControllerTest {
 
   @MockitoBean
   private BookService service;
 
   @Autowired
-  private WebTestClient client;
+  private RestTestClient client;
 
   @TestFactory
   Stream<DynamicNode> create() {
-    return TestTemplate
+    return TestBuilder
         .defaultTest("Should create book")
         .given("service").as(mock()).use(service)
-            .invoking(mock -> mock.create(Mockito.any())).willAnswer(i -> Mono.just(savedBook(i.getArgument(0))))
+            .invoking(mock -> mock.create(Mockito.any())).willAnswer(i -> savedBook(i.getArgument(0)))
         .given("request-body").is(() -> """
             {
               "id": "1000",
@@ -49,7 +50,7 @@ class BookAdminControllerTest {
         .when(ctx -> client
             .post().uri("/books")
             .contentType(APPLICATION_JSON)
-            .bodyValue(ctx.get("request-body"))
+            .body(ctx.get("request-body"))
             .exchange())
         .then(ctx -> ctx.result()
             .expectStatus().isCreated()

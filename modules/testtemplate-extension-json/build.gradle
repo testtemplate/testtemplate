@@ -1,18 +1,21 @@
 plugins {
-  id 'java-common-conventions'
-  id 'maven-publish-conventions'
+  id('java-common-conventions')
+  id('maven-publish-conventions')
 }
-
-description = 'A test template builder extension to support JSON values'
 
 dependencies {
   implementation project(':testtemplate-api')
 
   implementation libs.json.path
+  implementation libs.slf4j.api
+
+  compileOnly libs.jspecify
 
   testImplementation libs.assertj
   testImplementation libs.junit
   testImplementation libs.mockito.junit
+
+  testCompileOnly libs.jspecify
 
   testRuntimeOnly libs.junit.runtime
 }

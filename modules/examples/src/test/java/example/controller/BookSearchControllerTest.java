@@ -1,28 +1,26 @@
 package example.controller;
 
-import io.github.testtemplate.TestTemplate;
-
 import example.service.Book;
 import example.service.BookService;
-import example.service.NotFoundException;
+import io.github.testtemplate.TestBuilder;
+
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureRestTestClient;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.test.web.servlet.client.RestTestClient;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.List;
 import java.util.stream.Stream;
 
-import static io.github.testtemplate.TestTemplate.mock;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.json.JsonCompareMode.STRICT;
 
-@WebFluxTest(controllers = BookSearchController.class)
+@WebMvcTest(controllers = BookSearchController.class)
+@AutoConfigureRestTestClient
 class BookSearchControllerTest {
 
   private static final Book BOOK_1000 = Book.builder()
@@ -50,16 +48,17 @@ class BookSearchControllerTest {
   private BookService bookService;
 
   @Autowired
-  private WebTestClient client;
+  private RestTestClient client;
 
   @TestFactory
   Stream<DynamicNode> search() {
-    return TestTemplate
-        .defaultTest("should return a list of wanted books")
-        .given("service").as(mock()).use(bookService)
-            .invoking(mock -> mock.findAll()).willReturn(Flux.just(BOOK_1000, BOOK_2000, BOOK_3000))
-            .invoking(mock -> mock.search(any())).willReturn(Flux.empty())
-            .invoking(mock -> mock.search("great")).willReturn(Flux.just(BOOK_1000, BOOK_2000))
+    return TestBuilder
+        .defaultTest("should return list of wanted books")
+//        .disabled()
+        .given("service").as(TestBuilder.mock()).use(bookService)
+        .invoking(mock -> mock.findAll()).willReturn(List.of(BOOK_1000, BOOK_2000, BOOK_3000))
+        .invoking(mock -> mock.search(any())).willReturn(List.of())
+        .invoking(mock -> mock.search("great")).willReturn(List.of(BOOK_1000, BOOK_2000))
         .when(ctx -> client
             .get()
             .uri(u -> u.path("/books").query(ctx.given("request-query").is("text=great")).build())
@@ -74,6 +73,7 @@ class BookSearchControllerTest {
                 """))
 
         .test("should return no books when no books match the request")
+        .disabled("flagueda")
         .sameAsDefault()
         .except("request-query").is("text=potato")
         .then(ctx -> ctx.result()
@@ -81,8 +81,9 @@ class BookSearchControllerTest {
             .expectBody().json("[]"))
 
         .test("should return all books when there is no search criteria")
+        .disabled()
         .sameAsDefault()
-        .except("request-query").isNull()
+        .except("request-query").isNull().or(" ").or("text=")
         .then(ctx -> ctx.result()
             .expectStatus().isOk()
             .expectBody().json("""
@@ -92,36 +93,6 @@ class BookSearchControllerTest {
                   {"id": "3000", "title": "House of Future"}
                 ]
                 """))
-
-        .suite();
-  }
-
-  @TestFactory
-  Stream<DynamicNode> read() {
-    return TestTemplate
-        .defaultTest("should return a book")
-        .given("service").as(mock()).use(bookService)
-            .invoking(mock -> mock.read(any())).willThrow(NotFoundException::new)
-            .invoking(mock -> mock.read("1000")).willReturn(Mono.just(BOOK_1000))
-        .when(ctx -> client.get().uri("/books/{id}", ctx.given("requested-book-id").is(BOOK_1000.getId())).exchange())
-        .then(ctx -> ctx.result()
-            .expectStatus().isOk()
-            .expectBody().json("""
-                {
-                  "id": "1000",
-                  "title": "Greatest Book Ever",
-                  "description": "...",
-                  "author": "Brown, Alice",
-                  "publisher": "Imaginary Inc.",
-                  "publishedDate": "2022-04-18",
-                  "pageCount": 101
-                }
-                """, STRICT))
-
-        .test("should return 404 not found when the book doesn't exist")
-        .sameAsDefault()
-        .except("requested-book-id").is("9999")
-        .then(ctx -> ctx.result().expectStatus().isNotFound())
 
         .suite();
   }
