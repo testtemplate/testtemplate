@@ -10,6 +10,8 @@ Define your test scenario once with named variables; then declare alternative te
 same template and override only the variables that differ. JUnit 5's dynamic test engine renders each
 variant as its own test node in the test tree.
 
+:)
+
 Example (Junit 5):
 ```java
 @TestFactory
