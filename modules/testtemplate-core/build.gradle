@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'Core implementation of the TestTemplate engine: test runner, variable resolution, builder, and structured logging.'
+
 dependencies {
   implementation project(':testtemplate-api')
 

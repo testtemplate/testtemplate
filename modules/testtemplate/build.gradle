@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'Main entry point of the TestTemplate library. Assembles the core engine, JUnit integration, and optional extensions behind a single fluent TestBuilder facade; includes YAML-based configuration loading.'
+
 dependencies {
   api project(':testtemplate-api')
 

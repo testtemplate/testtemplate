@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'Public API contracts for the TestTemplate framework: interfaces, builder DSL, functional types, listeners, and configuration SPI.'
+
 dependencies {
   compileOnly libs.jspecify
 

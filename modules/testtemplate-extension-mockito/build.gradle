@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'Optional extension integrating Mockito mocks into TestTemplate via MockitoExtension, with automatic setup and verification lifecycle.'
+
 dependencies {
   implementation project(':testtemplate-api')
 

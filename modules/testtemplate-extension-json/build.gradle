@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'Optional extension adding JSONPath-powered variable support to TestTemplate via JsonExtension.'
+
 dependencies {
   implementation project(':testtemplate-api')
 

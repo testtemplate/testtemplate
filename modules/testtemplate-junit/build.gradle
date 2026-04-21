@@ -3,6 +3,8 @@ plugins {
   id('maven-publish-conventions')
 }
 
+description = 'JUnit 5 integration that adapts a TestTemplate suite into JUnit 5 dynamic tests via JUnitTestSuiteFactory.'
+
 dependencies {
   api libs.junit.api
 

@@ -3,6 +3,8 @@ plugins {
   id 'org.springframework.boot' version '4.0.3'
 }
 
+description = 'Spring Boot demo application showcasing TestTemplate usage with REST controllers, services, and the JSON/Mockito extensions.'
+
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {
