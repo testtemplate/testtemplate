@@ -72,7 +72,7 @@ public final class MockitoExtension<S, R> implements
           var answerIterator = invocationSupplier.getAnswers().iterator();
           var stubber = Mockito.lenient().doAnswer(answerIterator.next().apply(ctx));
           while (answerIterator.hasNext()) {
-            answerIterator.next().apply(ctx);
+            stubber = stubber.doAnswer(answerIterator.next().apply(ctx));
           }
           invocationSupplier.getMethod().apply(stubber.when(mock), ctx);
         }

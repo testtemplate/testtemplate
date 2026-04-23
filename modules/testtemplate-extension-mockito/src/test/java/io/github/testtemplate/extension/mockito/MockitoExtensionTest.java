@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(org.mockito.junit.jupiter.MockitoExtension.class)
@@ -61,6 +62,29 @@ class MockitoExtensionTest {
       assertThat(details.isMock()).isTrue();
       assertThat(details.getStubbings()).hasSize(2);
     }
+
+    @Test
+    void shouldReturnMockWithChainedResponses() throws Exception {
+      var entity1 = new TestEntity("1", "title1", "content1", 1L);
+      var entity2 = new TestEntity("2", "title2", "content2", 2L);
+      var ex = new RuntimeException("expected");
+
+      new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .mock(TestService.class)
+            .invoking(m -> m.read("1234"))
+              .willReturn(() -> entity1)
+              .willAnswer(i -> entity2)
+              .willThrow(ex)
+          .when(ctx -> null);
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = (TestService) functionIsCaptor.getValue().apply(context);
+      assertThat(mock.read("1234")).isSameAs(entity1);
+      assertThat(mock.read("1234")).isSameAs(entity2);
+      assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
+    }
   }
 
   @Nested
@@ -96,6 +120,27 @@ class MockitoExtensionTest {
       var details = Mockito.mockingDetails(result);
       assertThat(details.isMock()).isTrue();
       assertThat(details.getStubbings()).hasSize(1);
+    }
+
+    @Test
+    void shouldReturnMockWithChainedResponses() throws Exception {
+      var entity1 = new TestEntity("1", "title1", "content1", 1L);
+      var entity2 = new TestEntity("2", "title2", "content2", 2L);
+      var ex = new RuntimeException("expected");
+
+      new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .invoking((TestService m, Context c) -> m.read("1234"))
+            .willReturn(() -> entity1)
+            .willAnswer(i -> entity2)
+            .willThrow(ex);
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = (TestService) functionIsCaptor.getValue().apply(context);
+      assertThat(mock.read("1234")).isSameAs(entity1);
+      assertThat(mock.read("1234")).isSameAs(entity2);
+      assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
     }
   }
 
@@ -133,6 +178,28 @@ class MockitoExtensionTest {
       var details = Mockito.mockingDetails(result);
       assertThat(details.isMock()).isTrue();
       assertThat(details.getStubbings()).hasSize(2);
+    }
+
+    @Test
+    void shouldReturnMockWithChainedResponses() throws Exception {
+      var entity1 = new TestEntity("1", "title1", "content1", 1L);
+      var entity2 = new TestEntity("2", "title2", "content2", 2L);
+      var ex = new RuntimeException("expected");
+
+      new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .mock(TestService.class)
+            .invoking(m -> m.read("1234"))
+              .willReturn(() -> entity1)
+              .willAnswer(i -> entity2)
+              .willThrow(ex);
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = (TestService) functionIsCaptor.getValue().apply(context);
+      assertThat(mock.read("1234")).isSameAs(entity1);
+      assertThat(mock.read("1234")).isSameAs(entity2);
+      assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
     }
   }
 
