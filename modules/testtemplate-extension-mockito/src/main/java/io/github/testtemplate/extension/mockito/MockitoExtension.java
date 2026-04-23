@@ -158,8 +158,7 @@ public final class MockitoExtension<S, R> implements
       @Override
       public <T> ResponseStep<S, M, T> invoking(ExceptionalBiFunction<M, ContextGiven, T> method) {
         var invocationSupplier = new InvocationSupplier<>(method);
-        invocationSuppliers.add(invocationSupplier);
-        return new InnerResponseStep<>(next, this, invocationSupplier.getAnswers());
+        return new InnerResponseStep<>(next, this, invocationSuppliers, invocationSupplier);
       }
 
       @Override
@@ -179,33 +178,40 @@ public final class MockitoExtension<S, R> implements
 
       private final InnerInvokingStep<S, M> invokingStep;
 
-      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers;
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private final InvocationSupplier<M, ContextGiven> invocationSupplier;
 
       private InnerResponseStep(
           DefaultBuilder.GivenStep<S> next,
           InnerInvokingStep<S, M> invokingStep,
-          List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers) {
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers,
+          InvocationSupplier<M, ContextGiven> invocationSupplier) {
         this.next = next;
         this.invokingStep = invokingStep;
-        this.answers = answers;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<S, M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, ContextGiven, T> response) {
-        answers.add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, M, T> willReturn(ExceptionalFunction<ContextGiven, T> response) {
-        answers.add(ctx -> new Returns(response.apply(ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, M, T> willThrow(ExceptionalFunction<ContextGiven, Throwable> response) {
-        answers.add(ctx -> new ThrowsException(response.apply(ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
     }
 
@@ -279,39 +285,45 @@ public final class MockitoExtension<S, R> implements
           .metadata(MockitoMetadata.Variable.IS_MOCK, true)
           .is(buildSupplier(ctx -> ctx.get(variable), invocationSuppliers));
       var invocationSupplier = new InvocationSupplier<>(method);
-      invocationSuppliers.add(invocationSupplier);
-      return new InnerResponseStep<>(next, invocationSupplier.getAnswers());
+      return new InnerResponseStep<>(next, invocationSuppliers, invocationSupplier);
     }
 
     private static final class InnerResponseStep<S, R, M, T> implements ResponseStep<S, R, M, T> {
 
       private final AlternativeBuilder.ExceptStep.PostStep<S, R> next;
 
-      private final List<ExceptionalFunction<Context, Answer<Object>>> answers;
+      private final List<InvocationSupplier<M, Context>> invocationSuppliers;
+
+      private final InvocationSupplier<M, Context> invocationSupplier;
 
       private InnerResponseStep(
           AlternativeBuilder.ExceptStep.PostStep<S, R> next,
-          List<ExceptionalFunction<Context, Answer<Object>>> answers) {
+          List<InvocationSupplier<M, Context>> invocationSuppliers,
+          InvocationSupplier<M, Context> invocationSupplier) {
         this.next = next;
-        this.answers = answers;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<S, R, M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, Context, T> response) {
-        answers.add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
-        return new InnerPostStep<>(next, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, R, M, T> willReturn(ExceptionalFunction<Context, T> response) {
-        answers.add(ctx -> new Returns(response.apply(ctx)));
-        return new InnerPostStep<>(next, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, R, M, T> willThrow(ExceptionalFunction<Context, Throwable> response) {
-        answers.add(ctx -> new ThrowsException(response.apply(ctx)));
-        return new InnerPostStep<>(next, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
     }
 
@@ -445,8 +457,7 @@ public final class MockitoExtension<S, R> implements
       @Override
       public <T> ResponseStep<M, T> invoking(ExceptionalBiFunction<M, ContextGiven, T> method) {
         var invocationSupplier = new InvocationSupplier<>(method);
-        invocationSuppliers.add(invocationSupplier);
-        return new InnerResponseStep<>(next, this, invocationSupplier.getAnswers());
+        return new InnerResponseStep<>(next, this, invocationSuppliers, invocationSupplier);
       }
 
       @Override
@@ -461,33 +472,40 @@ public final class MockitoExtension<S, R> implements
 
       private final InnerInvokingStep<M> invokingStep;
 
-      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers;
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private final InvocationSupplier<M, ContextGiven> invocationSupplier;
 
       private InnerResponseStep(
           SetupBuilder.GivenStep next,
           InnerInvokingStep<M> invokingStep,
-          List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers) {
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers,
+          InvocationSupplier<M, ContextGiven> invocationSupplier) {
         this.next = next;
         this.invokingStep = invokingStep;
-        this.answers = answers;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, ContextGiven, T> response) {
-        answers.add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<M, T> willReturn(ExceptionalFunction<ContextGiven, T> response) {
-        answers.add(ctx -> new Returns(response.apply(ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<M, T> willThrow(ExceptionalFunction<ContextGiven, Throwable> response) {
-        answers.add(ctx -> new ThrowsException(response.apply(ctx)));
-        return new InnerPostStep<>(next, invokingStep, answers);
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
     }
 

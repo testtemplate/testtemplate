@@ -85,6 +85,20 @@ class MockitoExtensionTest {
       assertThat(mock.read("1234")).isSameAs(entity2);
       assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
     }
+
+    @Test
+    void shouldNotRegisterStubbingWhenInvokingHasNoResponseConfigured() throws Exception {
+      var invokingStep = new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .mock(TestService.class);
+      invokingStep.invoking(m -> m.read("1234"));  // return value ignored — simulates user mistake
+      invokingStep.when(ctx -> null);
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = functionIsCaptor.getValue().apply(context);
+      assertThat(Mockito.mockingDetails(mock).getStubbings()).isEmpty();
+    }
   }
 
   @Nested
@@ -141,6 +155,18 @@ class MockitoExtensionTest {
       assertThat(mock.read("1234")).isSameAs(entity1);
       assertThat(mock.read("1234")).isSameAs(entity2);
       assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
+    }
+
+    @Test
+    void shouldNotRegisterStubbingWhenInvokingHasNoResponseConfigured() throws Exception {
+      new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .invoking((TestService m, Context c) -> m.read("1234"));  // no will* — ResponseStep ignored
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = functionIsCaptor.getValue().apply(context);
+      assertThat(Mockito.mockingDetails(mock).getStubbings()).isEmpty();
     }
   }
 
@@ -200,6 +226,19 @@ class MockitoExtensionTest {
       assertThat(mock.read("1234")).isSameAs(entity1);
       assertThat(mock.read("1234")).isSameAs(entity2);
       assertThatThrownBy(() -> mock.read("1234")).isSameAs(ex);
+    }
+
+    @Test
+    void shouldNotRegisterStubbingWhenInvokingHasNoResponseConfigured() throws Exception {
+      new MockitoExtension<>()
+          .getExtension(builder, VARIABLE)
+          .mock(TestService.class)
+            .invoking(m -> m.read("1234"));  // no will* — ResponseStep ignored
+
+      verify(builder).is(functionIsCaptor.capture());
+
+      var mock = functionIsCaptor.getValue().apply(context);
+      assertThat(Mockito.mockingDetails(mock).getStubbings()).isEmpty();
     }
   }
 
