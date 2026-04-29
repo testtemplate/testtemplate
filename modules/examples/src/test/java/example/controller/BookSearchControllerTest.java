@@ -56,9 +56,9 @@ class BookSearchControllerTest {
         .defaultTest("should return list of wanted books")
 //        .disabled()
         .given("service").as(TestBuilder.mock()).use(bookService)
-        .invoking(mock -> mock.findAll()).willReturn(List.of(BOOK_1000, BOOK_2000, BOOK_3000))
-        .invoking(mock -> mock.search(any())).willReturn(List.of())
-        .invoking(mock -> mock.search("great")).willReturn(List.of(BOOK_1000, BOOK_2000))
+            .invoking(mock -> mock.findAll()).willReturn(List.of(BOOK_1000, BOOK_2000, BOOK_3000))
+            .invoking(mock -> mock.search(any())).willReturn(List.of())
+            .invoking(mock -> mock.search("great")).willReturn(List.of(BOOK_1000, BOOK_2000))
         .when(ctx -> client
             .get()
             .uri(u -> u.path("/books").query(ctx.given("request-query").is("text=great")).build())
@@ -73,7 +73,6 @@ class BookSearchControllerTest {
                 """))
 
         .test("should return no books when no books match the request")
-        .disabled("flagueda")
         .sameAsDefault()
         .except("request-query").is("text=potato")
         .then(ctx -> ctx.result()
@@ -81,7 +80,6 @@ class BookSearchControllerTest {
             .expectBody().json("[]"))
 
         .test("should return all books when there is no search criteria")
-        .disabled()
         .sameAsDefault()
         .except("request-query").isNull().or(" ").or("text=")
         .then(ctx -> ctx.result()

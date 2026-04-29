@@ -60,6 +60,49 @@ public final class MockitoExtension<S, R> implements
     return (MockitoExtension<S, R>) instance;
   }
 
+  private static <M, C extends Context> ExceptionalFunction<C, M> buildSupplier(
+      ExceptionalFunction<C, M> mockSupplier,
+      List<InvocationSupplier<M, C>> invocationSuppliers) {
+
+    return ctx -> {
+      try {
+        var mock = requireNonNull(mockSupplier.apply(ctx));
+
+        for (var invocationSupplier : invocationSuppliers) {
+          var answerIterator = invocationSupplier.getAnswers().iterator();
+          var stubber = Mockito.lenient().doAnswer(answerIterator.next().apply(ctx));
+          while (answerIterator.hasNext()) {
+            stubber = stubber.doAnswer(answerIterator.next().apply(ctx));
+          }
+          invocationSupplier.getMethod().apply(stubber.when(mock), ctx);
+        }
+
+        return mock;
+      } catch (Exception e) {
+        throw new MockitoExtensionException("Caught exception", e); // TODO Add better message
+      }
+    };
+  }
+
+  private static final class InvocationSupplier<M, C extends Context> {
+
+    private final ExceptionalBiFunction<M, C, ?> method;
+
+    private final List<ExceptionalFunction<C, Answer<Object>>> answers = new ArrayList<>();
+
+    private InvocationSupplier(ExceptionalBiFunction<M, C, ?> method) {
+      this.method = method;
+    }
+
+    public ExceptionalBiFunction<M, C, ?> getMethod() {
+      return method;
+    }
+
+    public List<ExceptionalFunction<C, Answer<Object>>> getAnswers() {
+      return answers;
+    }
+  }
+
   private static final class InnerMockitoDefaultBuilder<S> implements MockitoDefaultBuilder<S> {
 
     private final DefaultBuilder.GivenStep.MetadataStep<S> builder;
@@ -73,100 +116,120 @@ public final class MockitoExtension<S, R> implements
 
     @Override
     public <M> InvokingStep<S, M> mock(Class<? extends M> classToMock) {
-      return new InnerInvokingStep<>(ctx -> Mockito.mock(classToMock, variable));
+      var invocationSuppliers = new ArrayList<InvocationSupplier<M, ContextGiven>>();
+      var next = builder
+          .metadata(MockitoMetadata.Variable.IS_MOCK, true)
+          .is(buildSupplier(ctx -> Mockito.mock(classToMock, variable), invocationSuppliers));
+      return new InnerInvokingStep<>(next, invocationSuppliers);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <M> InvokingStep<S, M> use(M mock) {
       if (!Mockito.mockingDetails(mock).isMock()) {
-        throw new IllegalArgumentException("The object must be a mock (or a spy)"); // TODO Replace Exception
+        throw new MockitoExtensionException("The object must be a mock (or a spy)");
       }
 
-      return new InnerInvokingStep<>(ctx -> {
-        Mockito.reset(mock);
-        return mock;
-      });
+      var invocationSuppliers = new ArrayList<InvocationSupplier<M, ContextGiven>>();
+      var next = builder
+          .metadata(MockitoMetadata.Variable.IS_MOCK, true)
+          .is(buildSupplier(
+              ctx -> {
+                Mockito.reset(mock);
+                return mock;
+              },
+              invocationSuppliers));
+      return new InnerInvokingStep<>(next, invocationSuppliers);
     }
 
-    private final class InnerInvokingStep<M> implements InvokingStep<S, M> {
+    private static final class InnerInvokingStep<S, M> implements InvokingStep<S, M> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final DefaultBuilder.GivenStep<S> next;
 
-      private InnerInvokingStep(ExceptionalFunction<ContextGiven, M> supplier) {
-        this.supplier = supplier;
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private InnerInvokingStep(
+          DefaultBuilder.GivenStep<S> next,
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers) {
+        this.next = next;
+        this.invocationSuppliers = invocationSuppliers;
       }
 
       @Override
       public <T> ResponseStep<S, M, T> invoking(ExceptionalBiFunction<M, ContextGiven, T> method) {
-        return new InnerResponseStep<>(supplier, method);
+        var invocationSupplier = new InvocationSupplier<>(method);
+        return new InnerResponseStep<>(next, this, invocationSuppliers, invocationSupplier);
       }
 
       @Override
       public ExtensionStep<S> given(String variable) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-//            .preload()
-//            .metadata("io.github.testtemplate.extension.mockito.mock", true)
-            .is(supplier)
-            .given(variable);
+        return next.given(variable);
       }
 
       @Override
       public <R> DefaultBuilder.ThenStep<S, R> when(ExceptionalFunction<ContextGiven, R> template) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-//            .preload()
-//            .metadata("io.github.testtemplate.extension.mockito.mock", true)
-            .is(supplier)
-            .when(template);
+        return next.when(template);
       }
     }
 
-    private final class InnerResponseStep<M, T> implements ResponseStep<S, M, T> {
+    private static final class InnerResponseStep<S, M, T> implements ResponseStep<S, M, T> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final DefaultBuilder.GivenStep<S> next;
 
-      private final ExceptionalBiFunction<M, ContextGiven, T> method;
+      private final InnerInvokingStep<S, M> invokingStep;
+
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private final InvocationSupplier<M, ContextGiven> invocationSupplier;
 
       private InnerResponseStep(
-          ExceptionalFunction<ContextGiven, M> supplier,
-          ExceptionalBiFunction<M, ContextGiven, T> method) {
-        this.supplier = supplier;
-        this.method = method;
+          DefaultBuilder.GivenStep<S> next,
+          InnerInvokingStep<S, M> invokingStep,
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers,
+          InvocationSupplier<M, ContextGiven> invocationSupplier) {
+        this.next = next;
+        this.invokingStep = invokingStep;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<S, M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, ContextGiven, T> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, M, T> willReturn(ExceptionalFunction<ContextGiven, T> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> new Returns(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, M, T> willThrow(ExceptionalFunction<ContextGiven, Throwable> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> new ThrowsException(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
     }
 
-    private final class InnerPostStep<M, T> implements PostStep<S, M, T> {
+    private static final class InnerPostStep<S, M, T> implements PostStep<S, M, T> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final DefaultBuilder.GivenStep<S> next;
 
-      private final ExceptionalBiFunction<M, ContextGiven, T> method;
+      private final InnerInvokingStep<S, M> invokingStep;
 
-      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers = new ArrayList<>();
+      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers;
 
       private InnerPostStep(
-          ExceptionalFunction<ContextGiven, M> supplier,
-          ExceptionalBiFunction<M, ContextGiven, T> method,
-          ExceptionalFunction<ContextGiven, Answer<Object>> answer) {
-        this.supplier = supplier;
-        this.method = method;
-        this.answers.add(answer);
+          DefaultBuilder.GivenStep<S> next,
+          InnerInvokingStep<S, M> invokingStep,
+          List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers) {
+        this.next = next;
+        this.invokingStep = invokingStep;
+        this.answers = answers;
       }
 
       @Override
@@ -189,40 +252,17 @@ public final class MockitoExtension<S, R> implements
 
       @Override
       public <T2> ResponseStep<S, M, T2> invoking(ExceptionalBiFunction<M, ContextGiven, T2> method) {
-        return new InnerResponseStep<>(buildSupplier(), method);
+        return invokingStep.invoking(method);
       }
 
       @Override
       public ExtensionStep<S> given(String variable) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .given(variable);
+        return next.given(variable);
       }
 
       @Override
       public <R> DefaultBuilder.ThenStep<S, R> when(ExceptionalFunction<ContextGiven, R> template) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .when(template);
-      }
-
-      private ExceptionalFunction<ContextGiven, M> buildSupplier() {
-        return ctx -> {
-          try {
-            var mock = requireNonNull(supplier.apply(ctx));
-            var answerIterator = answers.iterator();
-            var stubber = Mockito.lenient().doAnswer(answerIterator.next().apply(ctx));
-            while (answerIterator.hasNext()) {
-              answerIterator.next().apply(ctx);
-            }
-            method.apply(stubber.when(mock), ctx);
-            return mock;
-          } catch (Exception e) {
-            throw new MockitoExtensionException("Caught exception", e); // TODO Add better message
-          }
-        };
+        return next.when(template);
       }
     }
   }
@@ -240,44 +280,64 @@ public final class MockitoExtension<S, R> implements
 
     @Override
     public <M, T> ResponseStep<S, R, M, T> invoking(ExceptionalBiFunction<M, Context, T> method) {
-      return new InnerResponseStep<>(method);
+      var invocationSuppliers = new ArrayList<InvocationSupplier<M, Context>>();
+      var next = builder
+          .metadata(MockitoMetadata.Variable.IS_MOCK, true)
+          .is(buildSupplier(ctx -> ctx.get(variable), invocationSuppliers));
+      var invocationSupplier = new InvocationSupplier<>(method);
+      return new InnerResponseStep<>(next, invocationSuppliers, invocationSupplier);
     }
 
-    private final class InnerResponseStep<M, T> implements ResponseStep<S, R, M, T> {
+    private static final class InnerResponseStep<S, R, M, T> implements ResponseStep<S, R, M, T> {
 
-      private final ExceptionalBiFunction<M, Context, T> method;
+      private final AlternativeBuilder.ExceptStep.PostStep<S, R> next;
 
-      private InnerResponseStep(ExceptionalBiFunction<M, Context, T> method) {
-        this.method = method;
+      private final List<InvocationSupplier<M, Context>> invocationSuppliers;
+
+      private final InvocationSupplier<M, Context> invocationSupplier;
+
+      private InnerResponseStep(
+          AlternativeBuilder.ExceptStep.PostStep<S, R> next,
+          List<InvocationSupplier<M, Context>> invocationSuppliers,
+          InvocationSupplier<M, Context> invocationSupplier) {
+        this.next = next;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<S, R, M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, Context, T> response) {
-        return new InnerPostStep<>(method, ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, R, M, T> willReturn(ExceptionalFunction<Context, T> response) {
-        return new InnerPostStep<>(method, ctx -> new Returns(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<S, R, M, T> willThrow(ExceptionalFunction<Context, Throwable> response) {
-        return new InnerPostStep<>(method, ctx -> new ThrowsException(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invocationSupplier.getAnswers());
       }
     }
 
-    private final class InnerPostStep<M, T> implements PostStep<S, R, M, T> {
+    private static final class InnerPostStep<S, R, M, T> implements PostStep<S, R, M, T> {
 
-      private final ExceptionalBiFunction<M, Context, T> method;
+      private final AlternativeBuilder.ExceptStep.PostStep<S, R> next;
 
-      private final List<ExceptionalFunction<Context, Answer<Object>>> answers = new ArrayList<>();
+      private final List<ExceptionalFunction<Context, Answer<Object>>> answers;
 
       private InnerPostStep(
-          ExceptionalBiFunction<M, Context, T> method,
-          ExceptionalFunction<Context, Answer<Object>> answer) {
-        this.method = method;
-        this.answers.add(answer);
+          AlternativeBuilder.ExceptStep.PostStep<S, R> next,
+          List<ExceptionalFunction<Context, Answer<Object>>> answers) {
+        this.next = next;
+        this.answers = answers;
       }
 
       @Override
@@ -302,33 +362,18 @@ public final class MockitoExtension<S, R> implements
       }
 
       @Override
-      public ExtensionStep<S, R> except(
-          String variable) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variable);
+      public ExtensionStep<S, R> except(String variable) {
+        return next.except(variable);
       }
 
       @Override
-      public Value2Step<S, R> except(
-          String variable1,
-          String variable2) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variable1, variable2);
+      public Value2Step<S, R> except(String variable1, String variable2) {
+        return next.except(variable1, variable2);
       }
 
       @Override
-      public Value3Step<S, R> except(
-          String variable1,
-          String variable2,
-          String variable3) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variable1, variable2, variable3);
+      public Value3Step<S, R> except(String variable1, String variable2, String variable3) {
+        return next.except(variable1, variable2, variable3);
       }
 
       @Override
@@ -337,10 +382,7 @@ public final class MockitoExtension<S, R> implements
           String variable2,
           String variable3,
           String variable4) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variable1, variable2, variable3, variable4);
+        return next.except(variable1, variable2, variable3, variable4);
       }
 
       @Override
@@ -350,43 +392,17 @@ public final class MockitoExtension<S, R> implements
           String variable3,
           String variable4,
           String variable5) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variable1, variable2, variable3, variable4, variable5);
+        return next.except(variable1, variable2, variable3, variable4, variable5);
       }
 
       @Override
       public ValueNStep<S, R> except(List<String> variables) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .except(variables);
+        return next.except(variables);
       }
 
       @Override
       public AlternativeBuilder<S, R> then(ExceptionalConsumer<ContextResult<R>> validator) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .then(validator);
-      }
-
-      private ExceptionalFunction<Context, M> buildSupplier() {
-        return ctx -> {
-          try {
-            M mock = requireNonNull(ctx.get(variable));
-            var answerIterator = answers.iterator();
-            var stubber = Mockito.lenient().doAnswer(answerIterator.next().apply(ctx));
-            while (answerIterator.hasNext()) {
-              answerIterator.next().apply(ctx);
-            }
-            method.apply(stubber.when(mock), ctx);
-            return mock;
-          } catch (Exception e) {
-            throw new MockitoExtensionException("Caught exception", e); // TODO Add better message
-          }
-        };
+        return next.then(validator);
       }
     }
   }
@@ -404,88 +420,110 @@ public final class MockitoExtension<S, R> implements
 
     @Override
     public <M> InvokingStep<M> mock(Class<? extends M> classToMock) {
-      return new InnerInvokingStep<>(ctx -> Mockito.mock(classToMock, variable));
+      var invocationSuppliers = new ArrayList<InvocationSupplier<M, ContextGiven>>();
+      var next = builder.is(buildSupplier(
+          ctx -> Mockito.mock(classToMock, variable), invocationSuppliers));
+      return new InnerInvokingStep<>(next, invocationSuppliers);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <M> InvokingStep<M> use(M mock) {
       if (!Mockito.mockingDetails(mock).isMock()) {
-        throw new IllegalArgumentException("The object must be a mock (or a spy)"); // TODO Replace Exception
+        throw new MockitoExtensionException("The object must be a mock (or a spy)");
       }
 
       // Be sure there is no stubbing outside the test builder because we will reset the mock after each test.
       Mockito.reset(mock);
 
-      return new InnerInvokingStep<>(ctx -> mock);
+      var invocationSuppliers = new ArrayList<InvocationSupplier<M, ContextGiven>>();
+      var next = builder.is(buildSupplier(ctx -> mock, invocationSuppliers));
+      return new InnerInvokingStep<>(next, invocationSuppliers);
     }
 
-    private final class InnerInvokingStep<M> implements InvokingStep<M> {
+    private static final class InnerInvokingStep<M> implements InvokingStep<M> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final SetupBuilder.GivenStep next;
 
-      private InnerInvokingStep(ExceptionalFunction<ContextGiven, M> supplier) {
-        this.supplier = supplier;
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private InnerInvokingStep(
+          SetupBuilder.GivenStep next,
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers) {
+        this.next = next;
+        this.invocationSuppliers = invocationSuppliers;
       }
 
       @Override
       public <T> ResponseStep<M, T> invoking(ExceptionalBiFunction<M, ContextGiven, T> method) {
-        return new InnerResponseStep<>(supplier, method);
+        var invocationSupplier = new InvocationSupplier<>(method);
+        return new InnerResponseStep<>(next, this, invocationSuppliers, invocationSupplier);
       }
 
       @Override
       public SetupBuilder.ExtensionStep given(String variable) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(supplier)
-            .given(variable);
+        return next.given(variable);
       }
     }
 
-    private final class InnerResponseStep<M, T> implements ResponseStep<M, T> {
+    private static final class InnerResponseStep<M, T> implements ResponseStep<M, T> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final SetupBuilder.GivenStep next;
 
-      private final ExceptionalBiFunction<M, ContextGiven, T> method;
+      private final InnerInvokingStep<M> invokingStep;
+
+      private final List<InvocationSupplier<M, ContextGiven>> invocationSuppliers;
+
+      private final InvocationSupplier<M, ContextGiven> invocationSupplier;
 
       private InnerResponseStep(
-          ExceptionalFunction<ContextGiven, M> supplier,
-          ExceptionalBiFunction<M, ContextGiven, T> method) {
-        this.supplier = supplier;
-        this.method = method;
+          SetupBuilder.GivenStep next,
+          InnerInvokingStep<M> invokingStep,
+          List<InvocationSupplier<M, ContextGiven>> invocationSuppliers,
+          InvocationSupplier<M, ContextGiven> invocationSupplier) {
+        this.next = next;
+        this.invokingStep = invokingStep;
+        this.invocationSuppliers = invocationSuppliers;
+        this.invocationSupplier = invocationSupplier;
       }
 
       @Override
       public PostStep<M, T> willAnswer(ExceptionalBiFunction<InvocationOnMock, ContextGiven, T> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> i -> requireNonNull(response.apply(i, ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<M, T> willReturn(ExceptionalFunction<ContextGiven, T> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> new Returns(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new Returns(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
 
       @Override
       public PostStep<M, T> willThrow(ExceptionalFunction<ContextGiven, Throwable> response) {
-        return new InnerPostStep<>(supplier, method, ctx -> new ThrowsException(response.apply(ctx)));
+        invocationSuppliers.add(invocationSupplier);
+        invocationSupplier.getAnswers().add(ctx -> new ThrowsException(response.apply(ctx)));
+        return new InnerPostStep<>(next, invokingStep, invocationSupplier.getAnswers());
       }
     }
 
-    private final class InnerPostStep<M, T> implements PostStep<M, T> {
+    private static final class InnerPostStep<M, T> implements PostStep<M, T> {
 
-      private final ExceptionalFunction<ContextGiven, M> supplier;
+      private final SetupBuilder.GivenStep next;
 
-      private final ExceptionalBiFunction<M, ContextGiven, T> method;
+      private final InnerInvokingStep<M> invokingStep;
 
-      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers = new ArrayList<>();
+      private final List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers;
 
       private InnerPostStep(
-          ExceptionalFunction<ContextGiven, M> supplier,
-          ExceptionalBiFunction<M, ContextGiven, T> method,
-          ExceptionalFunction<ContextGiven, Answer<Object>> answer) {
-        this.supplier = supplier;
-        this.method = method;
-        this.answers.add(answer);
+          SetupBuilder.GivenStep next,
+          InnerInvokingStep<M> invokingStep,
+          List<ExceptionalFunction<ContextGiven, Answer<Object>>> answers) {
+        this.next = next;
+        this.invokingStep = invokingStep;
+        this.answers = answers;
       }
 
       @Override
@@ -508,32 +546,12 @@ public final class MockitoExtension<S, R> implements
 
       @Override
       public <T2> ResponseStep<M, T2> invoking(ExceptionalBiFunction<M, ContextGiven, T2> method) {
-        return new InnerResponseStep<>(buildSupplier(), method);
+        return invokingStep.invoking(method);
       }
 
       @Override
       public SetupBuilder.ExtensionStep given(String variable) {
-        return builder
-            .metadata(MockitoMetadata.Variable.IS_MOCK, true)
-            .is(buildSupplier())
-            .given(variable);
-      }
-
-      private ExceptionalFunction<ContextGiven, M> buildSupplier() {
-        return ctx -> {
-          try {
-            var mock = requireNonNull(supplier.apply(ctx));
-            var answerIterator = answers.iterator();
-            var stubber = Mockito.lenient().doAnswer(answerIterator.next().apply(ctx));
-            while (answerIterator.hasNext()) {
-              answerIterator.next().apply(ctx);
-            }
-            method.apply(stubber.when(mock), ctx);
-            return mock;
-          } catch (Exception e) {
-            throw new MockitoExtensionException("Caught exception", e); // TODO Add better message
-          }
-        };
+        return next.given(variable);
       }
     }
   }
