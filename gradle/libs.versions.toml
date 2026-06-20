@@ -1,6 +1,6 @@
 [versions]
 checkstyle = "12.3.0"
-junit = "5.13.4"
+junit = "6.0.1"
 mockito = "5.21.0"
 
 [libraries]
